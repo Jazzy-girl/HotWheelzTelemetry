@@ -9,11 +9,11 @@ Code for
 
 # Developers
 
-Divna Mijić
-Ryanne Wilson
-Matthew Cornell
-Gem Martinage
-Natu Benyam Demeke
+Divna Mijić\\
+Ryanne Wilson\\
+Matthew Cornell\\
+Gem Martinage\\
+Natu Benyam Demeke\\
 Max Young
 
 # Necessary Installs
