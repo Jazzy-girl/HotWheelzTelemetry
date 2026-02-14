@@ -5,8 +5,8 @@ import io
 import base64
 import math
 
-sys.path.append(__file__ + "/..")
-import Pit.packet as packet
+sys.path.append(os.path.join(os.path.split(__file__)[0], ".."))
+import packet
 
 if len(sys.argv) < 2 or len(sys.argv) > 3:
     print(f"Usage: {sys.argv[0]} <PORT | FILE> [baudrate]")

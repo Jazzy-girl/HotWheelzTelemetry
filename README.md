@@ -1,11 +1,20 @@
-# HotWheelzCANbus
+# HotWheelz Telemetry
+Code for
+* sending data from the car (Raspberry Pi) to the pit (Arduino->Laptop)
+* displaying and analyzing data in a native python app pit-side
+* displaying backup camera and necessary data to the driver in a native python app car-side
 
-Code for the Raspberry Pi for interpreting BMS CANbus data and uploading it to a monitor for the driver.
+## Telemetry Documentation Artifacts
+[Telemetry Project / Documentation](https://docs.google.com/document/d/1JleDLJ7EduALBelWgs0jYR1E61BF-kjRYm0OXcnqzK4/edit?tab=t.0)
 
 # Developers
 
-Divna Mijić
-Ryanne Wilson
+Divna Mijić  
+Ryanne Wilson  
+Matthew Cornell  
+Gem Martinage  
+Natu Benyam Demeke  
+Max Young
 
 # Necessary Installs
 

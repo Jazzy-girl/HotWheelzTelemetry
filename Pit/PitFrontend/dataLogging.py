@@ -8,7 +8,12 @@ Functions to:
 """
 
 import csv
-from Pit.packet import ParsedPacket
+import os
+import sys
+
+sys.path.append(os.path.join(os.path.split(__file__)[0], ".."))
+
+from packet import ParsedPacket
 
 FILENAME = 'carData.csv'
 checksum = 1
