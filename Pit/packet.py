@@ -19,10 +19,14 @@ PULSE_SPEED_MUL = WHEEL_CIRCUMFERENCE_FT / PULSES_PER_ROTATION * FT_TO_MI * S_TO
 
 def thermistor_temp(reading: int) -> tuple[float, float, float]:
     LOW_SIDE_RESISTOR = 10000
+    Ro = 10000.0
+    To = 25.0
+    beta = 3950.0
     voltage = reading / 1024
     resistance = LOW_SIDE_RESISTOR / voltage - LOW_SIDE_RESISTOR
-    temperature = 0
-    return voltage, resistance, temperature
+    steinhart = math.log(resistance / Ro) / beta
+    steinhart += 1.0 / (To + 273.15)
+    return voltage * 3.3, resistance, (1.0 / steinhart) - 273.15
 
 def checksum_of_data(data: bytes | bytearray) -> int:
     return functools.reduce(int.__xor__, struct.unpack("<4x21H", data))
