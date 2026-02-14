@@ -2,7 +2,8 @@
 Authors: Ryanne Wilson
 
 Car-side GUI, using Raspberry Pi.
-Displays:
+Display: https://www.adafruit.com/product/2718
+What is displayed:
     - Backup camera
     - Speed
     - Cockpit temperature
@@ -17,17 +18,22 @@ Functionality:
     - User can touch the screen to minize/fullscreen the backup camera
 """
 import tkinter as tk
-import matplotlib.pyplot as plt
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import random
 import time
 from Pit.packet import ParsedPacket
+try:
+    from picamera2 import Picamera2
+except ImportError:
+    print("Running on non-RPI system - camera not available.")
+    Picamera2 = None
 
+CAMERA_RATIO = (480, 480) # Takes up 60% of the screen.
+DIMENSIONS = '800x480' # Pi Foudnation DIsplay - 7" Touchscreen Display for Raspberry Pi
 root = tk.Tk()
 root.title("Dashboard")
 background = "black"
-root.geometry("1200x800")
-root.state('zoomed')
+root.geometry(DIMENSIONS)
+# root.state('zoomed')
 
 def box(parent, title_text, width=150, height = 120):
     frame = tk.Frame(parent, bg="white", relief=tk.RIDGE, width=width, height=height, borderwidth=5)
@@ -36,15 +42,24 @@ def box(parent, title_text, width=150, height = 120):
     label.pack(pady=5)
     return frame, label
 
-def create_plot(parent, title):
-    fig, ax = plt.subplots(figsize=(5, 4), dpi=100)
-    ax.plot([0, 1, 2, 3], [random.randint(0, 10) for _ in range(4)])
-    ax.set_title(title)
 
-    canvas = FigureCanvasTkAgg(fig, master=parent)
-    canvas.draw()
-    canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
-    return canvas
+def init_cam():
+    """
+    Initializes the camera
+    """
+    global camera
+    camera = None
+    if Picamera2:
+        try:
+            camera = Picamera2()
+            config = camera.create_preview_configuration(main={"size": CAMERA_RATIO})
+            camera.configure(config)
+            camera.start()
+        except Exception as e:
+            print(f"Camera error: {e}")
+            camera = None
+
+
 
 #left
 left_frame = tk.Frame(root, bg=background, width = 300)
@@ -74,5 +89,20 @@ gps_frame, gps_label = box(gps_frame, "GPS Data Area", width = 1000, height = 60
 
 
 
-root.mainloop()
-   
+
+
+def start():
+    """
+    Code run at start.
+    Calls loop() after.
+    """
+    root.mainloop()
+    loop()
+
+def loop():
+    """
+    Loops forever.
+    """
+    loop()
+
+start()
