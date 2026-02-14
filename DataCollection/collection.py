@@ -3,6 +3,7 @@ import time
 import threading
 import sys
 import base64
+import os
 
 import board
 import busio
@@ -15,7 +16,7 @@ from adafruit_mcp2515.canio import Message
 import adafruit_mcp3xxx.mcp3008 as mcp
 from adafruit_mcp3xxx.analog_in import AnalogIn
 
-sys.path.append(__file__ + "/..") # modify the import path to find the packet module
+sys.path.append(os.path.join(os.path.split(__file__)[0], "..", "Pit"))
 import packet
 
 uart = busio.UART(board.TX, board.RX, baudrate=9600, timeout=10)
