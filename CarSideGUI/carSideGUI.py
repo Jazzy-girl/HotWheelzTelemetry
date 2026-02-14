@@ -21,18 +21,23 @@ import tkinter as tk
 import random
 import time
 from Pit.packet import ParsedPacket
+import PIL.Image, PIL.ImageTk
+from tkinter.ttk import *
 try:
     from picamera2 import Picamera2
 except ImportError:
     print("Running on non-RPI system - camera not available.")
     Picamera2 = None
 
-CAMERA_RATIO = (480, 480) # Takes up 60% of the screen.
+# 16:9 resolution
+# Examples:
+# 426 / 240
+# 640 / 360
+# 852 / 480 -- Will go off the screen
+CAMERA_RATIO = (426, 240)
+
 DIMENSIONS = '800x480' # Pi Foudnation DIsplay - 7" Touchscreen Display for Raspberry Pi
-root = tk.Tk()
-root.title("Dashboard")
-background = "black"
-root.geometry(DIMENSIONS)
+
 # root.state('zoomed')
 
 def box(parent, title_text, width=150, height = 120):
@@ -61,48 +66,61 @@ def init_cam():
 
 
 
-#left
-left_frame = tk.Frame(root, bg=background, width = 300)
-left_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
-left_frame.pack_propagate(False)
-#use matplotlib to create graph corresponding to each box on the left side
-#6 by 2 grid of boxes on the left side
-boxes = []
-for i in range(6):
-    for j in range(2):
-        box_frame, box_label = box(left_frame, f"Box {i*2 + j + 1}")
-        box_frame.grid(row=i, column=j, padx=3, pady=3)
-        left_frame.grid_rowconfigure(i, weight=1)
-        left_frame.grid_columnconfigure(j, weight=1)
-        boxes.append((box_frame, box_label))
+def setup():
+    root = tk.Tk()
+    root.title("Dashboard")
+    background = "black"
+    root.geometry(DIMENSIONS)
+    cam_frame = tk.Frame(root, background=background)
+    cam_frame.pack(side=tk.LEFT)
 
-#right
-main_panel = tk.Frame(root, bg=background)
-main_panel.pack(side=tk.RIGHT, expand=True, fill=tk.BOTH)
-graph_frame = tk.Frame(main_panel, bg="white", borderwidth=7, relief=tk.SUNKEN)
-gps_frame = tk.Frame(main_panel, bg="lightgrey", borderwidth=7, relief=tk.SUNKEN)
-graph_frame.pack(side=tk.TOP, expand=True, fill=tk.BOTH)
-gps_frame.pack(side=tk.BOTTOM, expand=True, fill=tk.BOTH)
+    video_label = Label(cam_frame,background=background,width=48)
+    video_label.pack()
 
-graph_frame, graph_label = box(graph_frame, "Graph Area", width = 1000, height = 600)
-gps_frame, gps_label = box(gps_frame, "GPS Data Area", width = 1000, height = 600)
+    init_cam()
 
+    def update_camera():
+        # if camera:
+        try:
+            # frame = camera.capture_array()
+            # image = PIL.Image.fromarray(frame)
+            FILE = "CarSideGUI/LastBanquetOfTheGirondins.jpg" # Example
+            image = PIL.Image.open(FILE)
+            image = image.resize(CAMERA_RATIO)
+            img_tk = PIL.ImageTk.PhotoImage(image)
+            video_label.img_tk = img_tk
+            video_label.config(image=img_tk)
+        except Exception as e:
+            print(f"Camera frame error: {e}")
+        root.after(5,update_camera)
 
+    update_camera()
+    #left
+    # left_frame = tk.Frame(root, bg=background, width = 300)
+    # left_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+    # left_frame.pack_propagate(False)
+    #use matplotlib to create graph corresponding to each box on the left side
+    #6 by 2 grid of boxes on the left side
+    # boxes = []
+    # for i in range(6):
+    #     for j in range(2):
+    #         box_frame, box_label = box(left_frame, f"Box {i*2 + j + 1}")
+    #         box_frame.grid(row=i, column=j, padx=3, pady=3)
+    #         left_frame.grid_rowconfigure(i, weight=1)
+    #         left_frame.grid_columnconfigure(j, weight=1)
+    #         boxes.append((box_frame, box_label))
 
+    #right
+    # main_panel = tk.Frame(root, bg=background)
+    # main_panel.pack(side=tk.RIGHT, expand=True, fill=tk.BOTH)
+    # graph_frame = tk.Frame(main_panel, bg="white", borderwidth=7, relief=tk.SUNKEN)
+    # gps_frame = tk.Frame(main_panel, bg="lightgrey", borderwidth=7, relief=tk.SUNKEN)
+    # graph_frame.pack(side=tk.TOP, expand=True, fill=tk.BOTH)
+    # gps_frame.pack(side=tk.BOTTOM, expand=True, fill=tk.BOTH)
 
+    # graph_frame, graph_label = box(graph_frame, "Graph Area", width = 1000, height = 600)
+    # gps_frame, gps_label = box(gps_frame, "GPS Data Area", width = 1000, height = 600)
 
-def start():
-    """
-    Code run at start.
-    Calls loop() after.
-    """
     root.mainloop()
-    loop()
 
-def loop():
-    """
-    Loops forever.
-    """
-    loop()
-
-start()
+setup()
