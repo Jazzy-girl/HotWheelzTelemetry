@@ -103,9 +103,12 @@ def setup():
 
 
     FIELDS = ['Speed','Power','Cockpit Temp']
-    for i in range(len(FIELDS)*2):
+    for i in range(len(FIELDS)):
         data_frame.rowconfigure(i,weight=1)
-    data_frame.columnconfigure(0,weight=1)
+
+    NUMCOLS = 2
+    for i in range(0,NUMCOLS):
+        data_frame.columnconfigure(i,weight=1)
     
     for i in range(len(FIELDS)):
         row = i
@@ -116,7 +119,7 @@ def setup():
         data_col = 0
         output_col = 1
         data_label = Label(data_frame,text=FIELDS[i],font=data_font)
-        data_label.grid(row=row,column=data_col,pady=(10,0),padx=(5,5))
+        data_label.grid(row=row,column=data_col,pady=(0,0),padx=(0,0))
         output_label = Label(data_frame,text="25%",font=label_font,)
         output_label.grid(row=row,column=output_col)
 
