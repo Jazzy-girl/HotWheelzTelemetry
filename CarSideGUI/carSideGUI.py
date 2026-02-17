@@ -8,11 +8,7 @@ What is displayed:
     - Speed
     - Cockpit temperature
     - Car battery
-    - Faults (if active)
-        - Low Cell Voltage
-        - Current Sensor
-        - Pack Voltage Sensor
-        - Thermistor
+    - 
 
 Functionality:
     - User can touch the screen to minize/fullscreen the backup camera
@@ -20,6 +16,7 @@ Functionality:
 import tkinter as tk
 import random
 import time
+import tkinter.font as tkFont
 from Pit.packet import ParsedPacket
 import PIL.Image, PIL.ImageTk
 from tkinter.ttk import *
@@ -75,7 +72,7 @@ def setup():
     cam_frame.pack(side=tk.LEFT)
 
     video_label = Label(cam_frame,background=background,width=48)
-    video_label.pack()
+    video_label.pack(expand=True)
 
     init_cam()
 
@@ -88,13 +85,42 @@ def setup():
             image = PIL.Image.open(FILE)
             image = image.resize(CAMERA_RATIO)
             img_tk = PIL.ImageTk.PhotoImage(image)
-            video_label.img_tk = img_tk
+            video_label.img_tk = img_tk # type: ignore
             video_label.config(image=img_tk)
         except Exception as e:
             print(f"Camera frame error: {e}")
         root.after(5,update_camera)
 
     update_camera()
+
+    """
+    Data Labels
+    """
+    data_frame = tk.Frame(root, background=background)
+    data_frame.pack(side=tk.RIGHT,expand=True,fill=tk.BOTH)
+    data_font = tkFont.Font(family="Arial",size=20)
+    label_font = tkFont.Font(family="Arial",size=25)
+
+
+    FIELDS = ['Speed','Power','Cockpit Temp']
+    for i in range(len(FIELDS)*2):
+        data_frame.rowconfigure(i,weight=1)
+    data_frame.columnconfigure(0,weight=1)
+    
+    for i in range(len(FIELDS)):
+        row = i
+        # if(i>1):
+        #     row += 1
+        #     if(i > 3):
+        #         row += 1
+        data_col = 0
+        output_col = 1
+        data_label = Label(data_frame,text=FIELDS[i],font=data_font)
+        data_label.grid(row=row,column=data_col,pady=(10,0),padx=(5,5))
+        output_label = Label(data_frame,text="25%",font=label_font,)
+        output_label.grid(row=row,column=output_col)
+
+
     #left
     # left_frame = tk.Frame(root, bg=background, width = 300)
     # left_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
