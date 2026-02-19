@@ -31,9 +31,14 @@ except ImportError:
 # 426 / 240
 # 640 / 360
 # 852 / 480 -- Will go off the screen
-CAMERA_RATIO = (426, 240)
+CAM_MIN_RATIO = (426, 240)
+CAM_MAX_RATIO = (640,360)
 
 DIMENSIONS = '800x480' # Pi Foudnation DIsplay - 7" Touchscreen Display for Raspberry Pi
+
+
+minimize: bool
+minimize = True
 
 # root.state('zoomed')
 
@@ -54,7 +59,7 @@ def init_cam():
     if Picamera2:
         try:
             camera = Picamera2()
-            config = camera.create_preview_configuration(main={"size": CAMERA_RATIO})
+            config = camera.create_preview_configuration(main={"size": CAM_MIN_RATIO})
             camera.configure(config)
             camera.start()
         except Exception as e:
@@ -62,10 +67,25 @@ def init_cam():
             camera = None
 
 
+def fullscreen(event, ratio):
+    """
+    fullscreens / minimizes the backup camera
+    """
+    print("CLICK!")
+    global minimize
+    minimize = not minimize
+    print(minimize)
+    if(minimize==True):
+        ratio[0] = CAM_MIN_RATIO
+    else:
+        ratio[0] = CAM_MAX_RATIO
+
 
 def setup():
     root = tk.Tk()
     root.title("Dashboard")
+    ratio = [CAM_MIN_RATIO]
+    root.bind('<Button-1>',lambda event: fullscreen(event,ratio)) # On 
     background = "black"
     root.geometry(DIMENSIONS)
     cam_frame = tk.Frame(root, background=background)
@@ -83,7 +103,7 @@ def setup():
             # image = PIL.Image.fromarray(frame)
             FILE = "CarSideGUI/LastBanquetOfTheGirondins.jpg" # Example
             image = PIL.Image.open(FILE)
-            image = image.resize(CAMERA_RATIO)
+            image = image.resize(ratio[0])
             img_tk = PIL.ImageTk.PhotoImage(image)
             video_label.img_tk = img_tk # type: ignore
             video_label.config(image=img_tk)
