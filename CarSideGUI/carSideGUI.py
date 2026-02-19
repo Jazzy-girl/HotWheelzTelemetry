@@ -42,6 +42,7 @@ minimize = True
 
 # root.state('zoomed')
 
+# UNUSED
 def box(parent, title_text, width=150, height = 120):
     frame = tk.Frame(parent, bg="white", relief=tk.RIDGE, width=width, height=height, borderwidth=5)
     frame.grid_propagate(False)
@@ -67,7 +68,7 @@ def init_cam():
             camera = None
 
 
-def fullscreen(event, ratio):
+def fullscreen(event, ratio, data_frame: tk.Frame,fault_label: tk.Label):
     """
     fullscreens / minimizes the backup camera
     """
@@ -77,19 +78,41 @@ def fullscreen(event, ratio):
     print(minimize)
     if(minimize==True):
         ratio[0] = CAM_MIN_RATIO
+        data_frame.pack(side=tk.RIGHT,expand=True,fill=tk.BOTH)
+        fault_label.place_forget()
     else:
         ratio[0] = CAM_MAX_RATIO
+        data_frame.pack_forget()
+        fault_label.place(x=100,y=10)
+
+def fault(event, fault_label: tk.Label):
+    """
+    Makes fault warning appear / disappear
+    """
+    fault_label.place(x=100,y=10)
+    print("FAULT!")
+
+
+
+def update_display():
+    """
+    Gets ParsedPackets and updates the display as necessary.
+    If faults occur, displays faults on top of other things
+    """
+
 
 
 def setup():
     root = tk.Tk()
     root.title("Dashboard")
+
     ratio = [CAM_MIN_RATIO]
-    root.bind('<Button-1>',lambda event: fullscreen(event,ratio)) # On 
+    root.bind('<Button-1>',lambda event: fullscreen(event,ratio,data_frame,fault_label)) # On 
+    root.bind('<Button-2>',lambda event: fault(event,fault_label)) # On 
     background = "black"
     root.geometry(DIMENSIONS)
     cam_frame = tk.Frame(root, background=background)
-    cam_frame.pack(side=tk.LEFT)
+    cam_frame.pack(side=tk.LEFT,expand=True,fill=tk.BOTH)
 
     video_label = Label(cam_frame,background=background,width=48)
     video_label.pack(expand=True)
@@ -117,9 +140,14 @@ def setup():
     Data Labels
     """
     data_frame = tk.Frame(root, background=background)
+    
     data_frame.pack(side=tk.RIGHT,expand=True,fill=tk.BOTH)
     data_font = tkFont.Font(family="Arial",size=20)
     label_font = tkFont.Font(family="Arial",size=25)
+
+    fault_font = tkFont.Font(family="Arial",size=25)
+    fault_label = tk.Label(text="WARNING: FAULT. PULL OVER ASAP!",font=fault_font)
+    
 
 
     FIELDS = ['Speed','Power','Cockpit Temp']
@@ -142,6 +170,7 @@ def setup():
         data_label.grid(row=row,column=data_col,pady=(0,0),padx=(0,0))
         output_label = Label(data_frame,text="25%",font=label_font,)
         output_label.grid(row=row,column=output_col)
+
 
 
     #left
