@@ -84,7 +84,7 @@ class CanBusWorker(threading.Thread):
     """
     def __init__(self):
         self.daemon = True
-        self.message = bytearray(13)
+        self.message = bytearray(22)
         self.can_cs = digitalio.DigitalInOut(board.D25)
         self.can = adafruit_mcp2515.MCP2515(spi1, self.can_cs, loopback=False, silent=False)
         self.start()
@@ -93,7 +93,9 @@ class CanBusWorker(threading.Thread):
             while True:
                 msg = self.can.receive()
                 if isinstance(msg, Message):
-                    self.message = msg.data
+                    start = msg.id * 8
+                    end = start + len(msg.data)
+                    self.message[start:end] = msg.data
 
 speed = SpeedWorker()
 sender = SenderWorker()
