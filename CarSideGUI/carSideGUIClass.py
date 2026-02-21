@@ -36,7 +36,10 @@ FIELDS = ['Speed','Power','Cockpit Temp']
 NUMCOLS = 2
 
 # background color
-BGCOLOR = 'deep sky blue'
+BGCOLOR = 'black'
+FGCOLOR = 'white'
+
+PADDING = 20
 
 class CarSideGUI:
 
@@ -73,7 +76,7 @@ class CarSideGUI:
         # self.imglabel.place(relx=0.5,rely=0.5,anchor='center')
 
         self.fault_font = tkFont.Font(family="Arial",size=25)
-        self.fault_label = tk.Label(text="WARNING: FAULT. PULL OVER ASAP!",font=self.fault_font,fg='red')
+        self.fault_label = tk.Label(text="WARNING: FAULT. PULL OVER ASAP!",font=self.fault_font,foreground='maroon1',background=BGCOLOR)
 
         """
         Set up data frame + labels
@@ -117,9 +120,9 @@ class CarSideGUI:
         Helper function.
         Makes a data label and a corresponding output label.
         """
-        data_label = Label(self.labelFrame,text=text,font=self.labelFont)
+        data_label = Label(self.labelFrame,text=f'{text}:',font=self.labelFont,background=BGCOLOR,padding=PADDING,foreground=FGCOLOR)
         data_label.pack()
-        output_label = Label(self.outputFrame,text="NULL",font=self.outputFont)
+        output_label = Label(self.outputFrame,text="25%",font=self.outputFont,background=BGCOLOR,foreground=FGCOLOR,padding=PADDING)
         output_label.pack()
         return data_label,output_label
     
