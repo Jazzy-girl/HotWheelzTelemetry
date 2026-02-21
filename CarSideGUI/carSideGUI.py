@@ -139,19 +139,15 @@ class CarSideGUI:
             # minimized
             
             self.ratio = CAM_MIN_RATIO
-            
-            self.currentCamImage.resize(self.ratio) # type: ignore
+            if(self.camera):
+                self.currentCamImage.resize(self.ratio) # type: ignore
+                self.videoLabel.img_tk = PIL.ImageTk.PhotoImage(self.currentCamImage) # type: ignore
             self.dataFrame.pack(side=tk.RIGHT,expand=True,fill=tk.BOTH)
-            self.videoLabel.img_tk = PIL.ImageTk.PhotoImage(self.currentCamImage) # type: ignore
-            
-            self.faultLabel.place_forget()
             
         else:
             # fullscreen
             self.ratio = CAM_MAX_RATIO
             self.dataFrame.pack_forget()
-            self.faultLabel.place(x=100,y=10)
-            self.faultLabel.tkraise()
         
     def init_cam(self):
         """
@@ -173,18 +169,17 @@ class CarSideGUI:
         Updates the camera
         """
         
-        # if camera:
-        try:
-            # frame = camera.capture_array()
-            # image = PIL.Image.fromarray(frame)
-            FILE = "CarSideGUI/LastBanquetOfTheGirondins.jpg" # Example
-            self.currentCamImage = PIL.Image.open(FILE)
-            self.currentCamImage = self.currentCamImage.resize(self.ratio) # type: ignore
-            img_tk = PIL.ImageTk.PhotoImage(self.currentCamImage)
-            self.videoLabel.img_tk = img_tk # type: ignore
-            self.videoLabel.config(image=img_tk)
-        except Exception as e:
-            print(f"Camera frame error: {e}")
+        if self.camera:
+            try:
+                frame = self.camera.capture_array()
+                image = PIL.Image.fromarray(frame)
+                self.currentCamImage = PIL.Image.open(image)
+                self.currentCamImage = self.currentCamImage.resize(self.ratio) # type: ignore
+                img_tk = PIL.ImageTk.PhotoImage(self.currentCamImage)
+                self.videoLabel.img_tk = img_tk # type: ignore
+                self.videoLabel.config(image=img_tk)
+            except Exception as e:
+                print(f"Camera frame error: {e}")
         self.root.after(5,self._update_camera)
     
     def update_fields(self,packet: ParsedPacket):
@@ -203,13 +198,13 @@ class CarSideGUI:
         self.powerOutput = packet.bms_soc
         self.tempOutput = packet.therm_temp
 
-        # TODO: check for faults
-        # if(packet.faults()):
-        # set faults
-        # else:
-        # if(faultActive):
-        #   faultActive = False
-        #   self.faultLabel.place_forget()
+        if(packet.bms_faults != 0):
+            self.faultActive = True
+            self.faultLabel.place(x=100,y=10)
+            self.faultLabel.tkraise()
+        elif(self.faultActive):
+            self.faultActive = False
+            self.faultLabel.place_forget()
 
 
 
