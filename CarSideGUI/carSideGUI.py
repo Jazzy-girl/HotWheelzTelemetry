@@ -17,7 +17,7 @@ import tkinter as tk
 import random
 import time
 import tkinter.font as tkFont
-# from Pit.packet import ParsedPacket
+from Pit.packet import ParsedPacket
 import PIL.Image, PIL.ImageTk
 from tkinter.ttk import *
 try:
@@ -76,7 +76,7 @@ class CarSideGUI:
         """
 
         self.fault_font = tkFont.Font(family="Arial",size=25)
-        self.fault_label = tk.Label(text="WARNING: FAULT. PULL OVER ASAP!",font=self.fault_font,foreground=FAULTCOLOR,background=BGCOLOR)
+        self.faultLabel = tk.Label(text="WARNING: FAULT. PULL OVER ASAP!",font=self.fault_font,foreground=FAULTCOLOR,background=BGCOLOR)
 
         """
         Set up data frame + labels
@@ -141,14 +141,14 @@ class CarSideGUI:
             self.dataFrame.pack(side=tk.RIGHT,expand=True,fill=tk.BOTH)
             self.videoLabel.img_tk = PIL.ImageTk.PhotoImage(self.currentCamImage) # type: ignore
             
-            self.fault_label.place_forget()
+            self.faultLabel.place_forget()
             
         else:
             # fullscreen
             self.ratio = CAM_MAX_RATIO
             self.dataFrame.pack_forget()
-            self.fault_label.place(x=100,y=10)
-            self.fault_label.tkraise()
+            self.faultLabel.place(x=100,y=10)
+            self.faultLabel.tkraise()
         
     def init_cam(self):
         """
@@ -169,7 +169,6 @@ class CarSideGUI:
         """
         Updates the camera
         """
-
         
         # if camera:
         try:
@@ -184,6 +183,28 @@ class CarSideGUI:
         except Exception as e:
             print(f"Camera frame error: {e}")
         self.root.after(5,self._update_camera)
+    
+    def update_fields(self,packet: ParsedPacket):
+        """
+        Input: ParsedPacket
+        Updates the data fields and checks for faults.
+        If a fault occurs
+
+        speedOutput
+        powerOutput
+        tempOutput
+        faultLabel
+        """
+
+        self.speedOutput = packet.motor_speed
+        self.powerOutput = packet.bms_soc
+        self.tempOutput = packet.therm_temp #??? is this right?
+
+        # TODO: check for faults
+        # if(packet.faults()):
+        # 
+
+
 
 
 c = CarSideGUI()
