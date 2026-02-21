@@ -60,6 +60,9 @@ class CarSideGUI:
         """
         self.camera = None
 
+        self.faultActive: bool
+        self.faultActive = False
+
         self.minimized: bool
         self.minimized = True
 
@@ -198,11 +201,15 @@ class CarSideGUI:
 
         self.speedOutput = packet.motor_speed
         self.powerOutput = packet.bms_soc
-        self.tempOutput = packet.therm_temp #??? is this right?
+        self.tempOutput = packet.therm_temp
 
         # TODO: check for faults
         # if(packet.faults()):
-        # 
+        # set faults
+        # else:
+        # if(faultActive):
+        #   faultActive = False
+        #   self.faultLabel.place_forget()
 
 
 
