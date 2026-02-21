@@ -186,18 +186,4 @@ def setup():
 
     update_camera()
 
-def loop():
-    
-
-
-
-
-    
-
-    
-
-
-
-    root.mainloop()
-
 setup()
