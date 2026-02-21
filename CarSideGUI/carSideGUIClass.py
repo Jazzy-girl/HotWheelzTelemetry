@@ -35,6 +35,9 @@ FIELDS = ['Speed','Power','Cockpit Temp']
 # Number of columns of data
 NUMCOLS = 2
 
+# background color
+BGCOLOR = 'deep sky blue'
+
 class CarSideGUI:
 
 
@@ -61,13 +64,13 @@ class CarSideGUI:
         """
 
 
-        """
-        Background image setup
-        """
-        self.bgImage = PIL.ImageTk.PhotoImage(PIL.Image.open(BACKGROUND))
-        self.imglabel = tk.Label(self.root,image=self.bgImage)
-        self.imglabel.img = self.bgImage # type: ignore
-        self.imglabel.place(relx=0.5,rely=0.5,anchor='center')
+        # """
+        # Background image setup
+        # """
+        # self.bgImage = PIL.ImageTk.PhotoImage(PIL.Image.open(BACKGROUND))
+        # self.imglabel = tk.Label(self.root,image=self.bgImage)
+        # self.imglabel.img = self.bgImage # type: ignore
+        # self.imglabel.place(relx=0.5,rely=0.5,anchor='center')
 
         self.fault_font = tkFont.Font(family="Arial",size=25)
         self.fault_label = tk.Label(text="WARNING: FAULT. PULL OVER ASAP!",font=self.fault_font,fg='red')
@@ -75,17 +78,22 @@ class CarSideGUI:
         """
         Set up data frame + labels
         """
-        self.data_frame = tk.Frame(self.root, background='')
+        self.dataFrame = tk.Frame(self.root, background=BGCOLOR)
 
-        self.data_frame.pack(side=tk.RIGHT,expand=True)
-        self.data_font = tkFont.Font(family="Arial",size=20)
-        self.label_font = tkFont.Font(family="Arial",size=25)
+        self.dataFrame.pack(side=tk.RIGHT,expand=True,fill=tk.BOTH)
+        self.outputFont = tkFont.Font(family="Arial",size=25)
+        self.labelFont = tkFont.Font(family="Arial",size=20)
+
+        self.labelFrame = tk.Frame(self.dataFrame,background=BGCOLOR)
+        self.outputFrame = tk.Frame(self.dataFrame,background=BGCOLOR)
+        self.labelFrame.pack(side=tk.LEFT)
+        self.outputFrame.pack(side=tk.RIGHT)
 
         for i in range(len(FIELDS)):
-            self.data_frame.rowconfigure(i,weight=1)
+            self.dataFrame.rowconfigure(i,weight=1)
         
         for i in range(0,NUMCOLS):
-            self.data_frame.columnconfigure(i,weight=1)
+            self.dataFrame.columnconfigure(i,weight=1)
         
         self.speedLabel, self.speedOutput = self._makeLabels(text=FIELDS[0],row=0)
         self.powerLabel, self.powerOutput = self._makeLabels(text=FIELDS[1],row=1)
@@ -94,10 +102,10 @@ class CarSideGUI:
         """
         Set up camera
         """
-        self.camFrame = tk.Frame(self.root,background='')
-        self.camFrame.pack(side=tk.LEFT,expand=True)
+        self.camFrame = tk.Frame(self.root,background=BGCOLOR)
+        self.camFrame.pack(side=tk.LEFT,expand=True,fill=tk.BOTH)
         # tkRaise?
-        self.videoLabel = Label(self.camFrame,width=48)
+        self.videoLabel = Label(self.camFrame,width=48,background=BGCOLOR)
         self.videoLabel.pack(expand=True)
 
         self.init_cam()
@@ -109,10 +117,10 @@ class CarSideGUI:
         Helper function.
         Makes a data label and a corresponding output label.
         """
-        data_label = Label(self.data_frame,text=text,font=self.label_font)
-        output_label = Label(self.data_frame,text=text,font=self.data_font)
-        data_label.grid(row=row,column=0)
-        output_label.grid(row=row,column=1)
+        data_label = Label(self.labelFrame,text=text,font=self.labelFont)
+        data_label.pack()
+        output_label = Label(self.outputFrame,text="NULL",font=self.outputFont)
+        output_label.pack()
         return data_label,output_label
     
     def _fullscreen(self,event):
@@ -124,18 +132,23 @@ class CarSideGUI:
         print(self.minimized)
         if(self.minimized):
             # minimized
+            
             self.ratio = CAM_MIN_RATIO
             
             self.currentCamImage.resize(self.ratio) # type: ignore
-            self.data_frame.pack(side=tk.RIGHT,expand=True,fill=tk.Y)
+            self.dataFrame.pack(side=tk.RIGHT,expand=True,fill=tk.BOTH)
             self.videoLabel.img_tk = PIL.ImageTk.PhotoImage(self.currentCamImage) # type: ignore
             
             self.fault_label.place_forget()
+            
         else:
             # fullscreen
             self.ratio = CAM_MAX_RATIO
-            self.data_frame.pack_forget()
+            self.dataFrame.pack_forget()
             self.fault_label.place(x=100,y=10)
+            self.fault_label.tkraise()
+        
+        
 
     def init_cam(self):
         """
