@@ -4,6 +4,7 @@ import threading
 import sys
 import base64
 import os
+import serial
 
 import board
 import busio
@@ -19,7 +20,7 @@ from adafruit_mcp3xxx.analog_in import AnalogIn
 sys.path.append(os.path.join(os.path.split(__file__)[0], "..", "Pit"))
 import packet
 
-uart = busio.UART(board.TX, board.RX, baudrate=9600, timeout=10)
+uart = serial.Serial("/dev/ttyS0", baudrate=9600, timeout=3000)
 spi0 = busio.SPI(board.SCK, MOSI=board.MOSI, MISO=board.MISO)
 spi1 = busio.SPI(board.SCK_1, MOSI=board.MOSI_1, MISO=board.MISO_1)
 
@@ -38,6 +39,7 @@ class SpeedWorker(threading.Thread):
     A worker thread that handles polling for pulses from a digital input to get motor speed
     """
     def __init__(self):
+        super().__init__()
         self.queue = collections.deque()
         self.daemon = True
         self.motor = digitalio.DigitalInOut(board.D12)
@@ -61,6 +63,7 @@ class SenderWorker(threading.Thread):
     A worker thread that handles sending messages over LoRa
     """
     def __init__(self):
+        super().__init__()
         self.daemon = True
         self.to_send = None
         self.lora_rst = digitalio.DigitalInOut(board.D5)
@@ -83,6 +86,7 @@ class CanBusWorker(threading.Thread):
     A worker thread that handles polling the CAN bus
     """
     def __init__(self):
+        super().__init__()
         self.daemon = True
         self.message = bytearray(22)
         self.can_cs = digitalio.DigitalInOut(board.D25)

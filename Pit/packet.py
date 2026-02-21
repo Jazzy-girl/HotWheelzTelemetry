@@ -62,7 +62,7 @@ class FaultSet(int):
     """
     A set of fault bits packed into a single integer
     """
-    def bits(self) -> Generator[int]:
+    def bits(self) -> Generator[int, None, None]:
         bits = int(self)
         i = 0
         while bits:
