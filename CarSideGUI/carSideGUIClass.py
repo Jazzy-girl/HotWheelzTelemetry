@@ -29,6 +29,12 @@ BACKGROUND = 'CarSideGUI/bg.jpg'
 CAM_MIN_RATIO = (426,240)
 CAM_MAX_RATIO = (640,360)
 
+# Fields to be displayed
+FIELDS = ['Speed','Power','Cockpit Temp']
+
+# Number of columns of data
+NUMCOLS = 2
+
 class CarSideGUI:
 
 
@@ -36,6 +42,7 @@ class CarSideGUI:
         """
         Sets up the GUI and then calls necessary loops.
         """
+        print("INITED!")
         self.camera = None
 
         self.minimized: bool
@@ -44,7 +51,91 @@ class CarSideGUI:
         self.root = tk.Tk()
         self.root.title("Dashboard")
 
+        self.ratio = CAM_MIN_RATIO
+        self.root.bind('<Button-1>',lambda event: self._fullscreen(event)) # On 
+
+        self.root.geometry(DIMENSIONS)
+
+        """
+        Fault label. To be displayed only while a fault is occurring.
+        """
+
+
+        """
+        Background image setup
+        """
+        self.bgImage = PIL.ImageTk.PhotoImage(PIL.Image.open(BACKGROUND))
+        self.imglabel = tk.Label(self.root,image=self.bgImage)
+        self.imglabel.img = self.bgImage # type: ignore
+        self.imglabel.place(relx=0.5,rely=0.5,anchor='center')
+
+        self.fault_font = tkFont.Font(family="Arial",size=25)
+        self.fault_label = tk.Label(text="WARNING: FAULT. PULL OVER ASAP!",font=self.fault_font,fg='red')
+
+        """
+        Set up data frame + labels
+        """
+        self.data_frame = tk.Frame(self.root, background='')
+
+        self.data_frame.pack(side=tk.RIGHT,expand=True)
+        self.data_font = tkFont.Font(family="Arial",size=20)
+        self.label_font = tkFont.Font(family="Arial",size=25)
+
+        for i in range(len(FIELDS)):
+            self.data_frame.rowconfigure(i,weight=1)
         
+        for i in range(0,NUMCOLS):
+            self.data_frame.columnconfigure(i,weight=1)
+        
+        self.speedLabel, self.speedOutput = self._makeLabels(text=FIELDS[0],row=0)
+        self.powerLabel, self.powerOutput = self._makeLabels(text=FIELDS[1],row=1)
+        self.tempLabel, self.tempOutput = self._makeLabels(text=FIELDS[2],row=2)
+
+        """
+        Set up camera
+        """
+        self.camFrame = tk.Frame(self.root,background='')
+        self.camFrame.pack(side=tk.LEFT,expand=True)
+        # tkRaise?
+        self.videoLabel = Label(self.camFrame,width=48)
+        self.videoLabel.pack(expand=True)
+
+        self.init_cam()
+        self._update_camera()
+        self.root.mainloop()
+        
+    def _makeLabels(self,text:str,row:int):
+        """
+        Helper function.
+        Makes a data label and a corresponding output label.
+        """
+        data_label = Label(self.data_frame,text=text,font=self.label_font)
+        output_label = Label(self.data_frame,text=text,font=self.data_font)
+        data_label.grid(row=row,column=0)
+        output_label.grid(row=row,column=1)
+        return data_label,output_label
+    
+    def _fullscreen(self,event):
+        """
+        Detects a touch to fullscreen / minimize the backup camera.
+        """
+        print("CLICK!")
+        self.minimized = not self.minimized
+        print(self.minimized)
+        if(self.minimized):
+            # minimized
+            self.ratio = CAM_MIN_RATIO
+            
+            self.currentCamImage.resize(self.ratio) # type: ignore
+            self.data_frame.pack(side=tk.RIGHT,expand=True,fill=tk.Y)
+            self.videoLabel.img_tk = PIL.ImageTk.PhotoImage(self.currentCamImage) # type: ignore
+            
+            self.fault_label.place_forget()
+        else:
+            # fullscreen
+            self.ratio = CAM_MAX_RATIO
+            self.data_frame.pack_forget()
+            self.fault_label.place(x=100,y=10)
 
     def init_cam(self):
         """
@@ -61,10 +152,25 @@ class CarSideGUI:
                 print(f"Camera error: {e}")
                 self.camera = None
         
-        
+    def _update_camera(self):
+        """
+        Updates the camera
+        """
 
-    
-    def loop(self):
-        """
-        The constant loop for checking things.
-        """
+        
+        # if camera:
+        try:
+            # frame = camera.capture_array()
+            # image = PIL.Image.fromarray(frame)
+            FILE = "CarSideGUI/LastBanquetOfTheGirondins.jpg" # Example
+            self.currentCamImage = PIL.Image.open(FILE)
+            self.currentCamImage = self.currentCamImage.resize(self.ratio) # type: ignore
+            img_tk = PIL.ImageTk.PhotoImage(self.currentCamImage)
+            self.videoLabel.img_tk = img_tk # type: ignore
+            self.videoLabel.config(image=img_tk)
+        except Exception as e:
+            print(f"Camera frame error: {e}")
+        self.root.after(5,self._update_camera)
+
+
+c = CarSideGUI()
