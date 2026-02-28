@@ -3,7 +3,6 @@ import functools
 import math
 import time
 from typing import NamedTuple, Generator
-from Telemetry.Car.Sensors import SensorBase
 
 PACKET_FORMAT = "<xxHI dd H Hf Ih5H8B"
 
@@ -223,7 +222,7 @@ class RawPacket(NamedTuple):
             bms_soc=self.soc * 0.5,
             bms_fan_speed=self.fan_speed,
         )
-    def apply(self, *sensors: SensorBase) -> 'RawPacket':
+    def apply(self, *sensors) -> 'RawPacket':
         for sensor in sensors:
             self = sensor.update_packet(self)
         return self

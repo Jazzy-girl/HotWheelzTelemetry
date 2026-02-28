@@ -17,7 +17,7 @@ import tkinter as tk
 import random
 import time
 import tkinter.font as tkFont
-from Pit.packet import FaultSet
+from Telemetry.packet import FaultSet
 import PIL.Image, PIL.ImageTk
 from tkinter.ttk import *
 try:
@@ -32,7 +32,7 @@ WIDTH, HEIGHT = 800,480
 DIMENSIONS = '{}x{}'.format(WIDTH,HEIGHT)
 
 # Background image for the GUI
-BACKGROUND = 'CarSideGUI/bg.jpg'
+BACKGROUND = 'Telemetry/Car/GUI/bg.jpg'
 
 # Minimized and Maximized aspect ratio for the camera.
 CAM_MIN_RATIO = (426,240)
@@ -209,8 +209,3 @@ class CarSideGUI:
         elif(self.faultActive):
             self.faultActive = False
             self.faultLabel.place_forget()
-
-
-
-
-c = CarSideGUI()
