@@ -54,7 +54,7 @@ PADDING = 20
 class CarSideGUI:
 
 
-    def __init__(self):
+    def __init__(self, before_run = lambda _: None):
         """
         Sets up the GUI and then calls necessary loops.
         """
@@ -114,8 +114,6 @@ class CarSideGUI:
         self.videoLabel.pack(expand=True)
 
         self.init_cam()
-        self._update_camera()
-        self.root.mainloop()
         
     def _makeLabels(self,text:str,row:int):
         """
@@ -209,3 +207,7 @@ class CarSideGUI:
         elif(self.faultActive):
             self.faultActive = False
             self.faultLabel.place_forget()
+    
+    def start(self):
+        self._update_camera()
+        self.root.mainloop()
