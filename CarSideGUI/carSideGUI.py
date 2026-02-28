@@ -157,9 +157,13 @@ class CarSideGUI:
         if Picamera2:
             try:
                 self.camera = Picamera2()
+                print("self.camera = Picamera2()")
                 config = self.camera.create_preview_configuration(main={"size": CAM_MIN_RATIO})
+                print("config = self.camera.create_preview_configuration(main={size: CAM_MIN_RATIO})")
                 self.camera.configure(config)
+                print("self.camera.configure(config)")
                 self.camera.start()
+                print("self.camera.start()")
             except Exception as e:
                 print(f"Camera error: {e}")
                 self.camera = None
