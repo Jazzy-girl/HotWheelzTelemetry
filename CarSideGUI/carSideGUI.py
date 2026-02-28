@@ -155,19 +155,19 @@ class CarSideGUI:
         """
         self.camera = None
         if Picamera2:
-            try:
-                print("first one!")
-                self.camera = Picamera2()
-                print("self.camera = Picamera2()")
-                config = self.camera.create_preview_configuration(main={"size": CAM_MIN_RATIO})
-                print("config = self.camera.create_preview_configuration(main={size: CAM_MIN_RATIO})")
-                self.camera.configure(config)
-                print("self.camera.configure(config)")
-                self.camera.start()
-                print("self.camera.start()")
-            except Exception as e:
-                print(f"Camera error: {e}")
-                self.camera = None
+            if len(Picamera2.global_camera_info()) > 0:
+                try:
+                    self.camera = Picamera2()
+                    config = self.camera.create_preview_configuration(main={"size": CAM_MIN_RATIO})
+                    self.camera.configure(config)
+                    self.camera.start()
+                except Exception as e:
+                    print(f"Camera error: {e}")
+                    self.camera = None
+            else:
+                print("No cameras available")
+        else:
+            print("Picamera2 is unavailable")
         
     def _update_camera(self):
         """
@@ -178,8 +178,7 @@ class CarSideGUI:
             try:
                 frame = self.camera.capture_array()
                 image = PIL.Image.fromarray(frame)
-                self.currentCamImage = PIL.Image.open(image)
-                self.currentCamImage = self.currentCamImage.resize(self.ratio) # type: ignore
+                self.currentCamImage = image.resize(self.ratio) # type: ignore
                 img_tk = PIL.ImageTk.PhotoImage(self.currentCamImage)
                 self.videoLabel.img_tk = img_tk # type: ignore
                 self.videoLabel.config(image=img_tk)
