@@ -17,7 +17,7 @@ import tkinter as tk
 import random
 import time
 import tkinter.font as tkFont
-from Pit.packet import ParsedPacket
+from Pit.packet import FaultSet
 import PIL.Image, PIL.ImageTk
 from tkinter.ttk import *
 try:
@@ -186,7 +186,7 @@ class CarSideGUI:
                 print(f"Camera frame error: {e}")
         self.root.after(5,self._update_camera)
     
-    def update_fields(self,packet: ParsedPacket):
+    def update_fields(self, motor_speed: float, bms_soc: float, therm_temp: float, bms_faults: FaultSet):
         """
         Input: ParsedPacket
         Updates the data fields and checks for faults.
@@ -198,11 +198,11 @@ class CarSideGUI:
         faultLabel
         """
 
-        self.speedOutput = packet.motor_speed
-        self.powerOutput = packet.bms_soc
-        self.tempOutput = packet.therm_temp
+        self.speedOutput = motor_speed
+        self.powerOutput = bms_soc
+        self.tempOutput = therm_temp
 
-        if(packet.bms_faults != 0):
+        if(bms_faults != 0):
             self.faultActive = True
             self.faultLabel.place(x=100,y=10)
             self.faultLabel.tkraise()
