@@ -16,6 +16,7 @@ S_TO_HR = 3600
 
 PULSE_SPEED_MUL = WHEEL_CIRCUMFERENCE_FT / PULSES_PER_ROTATION * FT_TO_MI * S_TO_HR
 
+PACKET_LEN = 56
 
 def thermistor_temp(reading: int) -> tuple[float, float, float]:
     LOW_SIDE_RESISTOR = 10000
