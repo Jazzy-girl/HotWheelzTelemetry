@@ -1,7 +1,9 @@
 import struct
 import functools
 import math
+import time
 from typing import NamedTuple, Generator
+from Telemetry.Car.Sensors import SensorBase
 
 PACKET_FORMAT = "<xxHI dd H Hf Ih5H8B"
 
@@ -135,6 +137,12 @@ class RawPacket(NamedTuple):
             soc=0,
             fan_speed=0
         )
+    @staticmethod
+    def new() -> 'RawPacket':
+        """
+        Create a new packet without any fields
+        """
+        return RawPacket(0, time.monotonic_ns() // 1000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
     def update_from_bms(self, data: bytes | bytearray) -> 'RawPacket':
         """
         Update the packet with BMS data
@@ -215,6 +223,10 @@ class RawPacket(NamedTuple):
             bms_soc=self.soc * 0.5,
             bms_fan_speed=self.fan_speed,
         )
+    def apply(self, *sensors: SensorBase) -> 'RawPacket':
+        for sensor in sensors:
+            self = sensor.update_packet(self)
+        return self
 
 class ParsedPacket(NamedTuple):
     """
