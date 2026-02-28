@@ -17,7 +17,7 @@ import tkinter as tk
 import random
 import time
 import tkinter.font as tkFont
-from Pit.packet import ParsedPacket
+from Pit.packet import FaultSet
 import PIL.Image, PIL.ImageTk
 from tkinter.ttk import *
 try:
@@ -155,14 +155,19 @@ class CarSideGUI:
         """
         self.camera = None
         if Picamera2:
-            try:
-                self.camera = Picamera2()
-                config = self.camera.create_preview_configuration(main={"size": CAM_MIN_RATIO})
-                self.camera.configure(config)
-                self.camera.start()
-            except Exception as e:
-                print(f"Camera error: {e}")
-                self.camera = None
+            if len(Picamera2.global_camera_info()) > 0:
+                try:
+                    self.camera = Picamera2()
+                    config = self.camera.create_preview_configuration(main={"size": CAM_MIN_RATIO})
+                    self.camera.configure(config)
+                    self.camera.start()
+                except Exception as e:
+                    print(f"Camera error: {e}")
+                    self.camera = None
+            else:
+                print("No cameras available")
+        else:
+            print("Picamera2 is unavailable")
         
     def _update_camera(self):
         """
@@ -173,8 +178,7 @@ class CarSideGUI:
             try:
                 frame = self.camera.capture_array()
                 image = PIL.Image.fromarray(frame)
-                self.currentCamImage = PIL.Image.open(image)
-                self.currentCamImage = self.currentCamImage.resize(self.ratio) # type: ignore
+                self.currentCamImage = image.resize(self.ratio) # type: ignore
                 img_tk = PIL.ImageTk.PhotoImage(self.currentCamImage)
                 self.videoLabel.img_tk = img_tk # type: ignore
                 self.videoLabel.config(image=img_tk)
@@ -182,7 +186,7 @@ class CarSideGUI:
                 print(f"Camera frame error: {e}")
         self.root.after(5,self._update_camera)
     
-    def update_fields(self,packet: ParsedPacket):
+    def update_fields(self, motor_speed: float, bms_soc: float, therm_temp: float, bms_faults: FaultSet):
         """
         Input: ParsedPacket
         Updates the data fields and checks for faults.
@@ -194,11 +198,11 @@ class CarSideGUI:
         faultLabel
         """
 
-        self.speedOutput = packet.motor_speed
-        self.powerOutput = packet.bms_soc
-        self.tempOutput = packet.therm_temp
+        self.speedOutput = motor_speed
+        self.powerOutput = bms_soc
+        self.tempOutput = therm_temp
 
-        if(packet.bms_faults != 0):
+        if(bms_faults != 0):
             self.faultActive = True
             self.faultLabel.place(x=100,y=10)
             self.faultLabel.tkraise()
