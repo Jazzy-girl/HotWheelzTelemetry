@@ -156,6 +156,7 @@ class CarSideGUI:
         self.camera = None
         if Picamera2:
             try:
+                print("first one!")
                 self.camera = Picamera2()
                 print("self.camera = Picamera2()")
                 config = self.camera.create_preview_configuration(main={"size": CAM_MIN_RATIO})
