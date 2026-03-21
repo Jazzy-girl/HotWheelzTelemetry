@@ -14,12 +14,12 @@ void setup(){
   Serial.println("CAN Receiver");
 
   pinMode(PIN_CAN_STANDBY, OUTPUT);
-  digitalWrite(PIN_CAN_STANDBY, false);; // turn off STANDBY
+  digitalWrite(PIN_CAN_STANDBY, LOW);; // turn off STANDBY
   pinMode(PIN_CAN_BOOSTEN, OUTPUT);
   digitalWrite(PIN_CAN_BOOSTEN, true); // turn on booster
 
   // start the CAN bus at 250 kbps
-  int buadrate = 500000;
+  int buadrate = 250000;
   if(!CAN.begin(buadrate)){ // 5000000
     Serial.println("Starting CAN failed!");
     while (1) delay(10);
