@@ -5,7 +5,7 @@ from ..Sensors import SensorBase
 
 class GPS(SensorBase):
     def __init__(self, port: str = "/dev/ttyS0", baudrate: int = 9600, timeout: int = 3000):
-        self.uart = serial.Serial("/dev/ttyS0", baudrate=baudrate, timeout=timeout)
+        self.uart = serial.Serial(port, baudrate=baudrate, timeout=timeout)
         self.gps = adafruit_gps.GPS(self.uart, debug=False)
         self.gps.send_command(b"PMTK314,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0") # magic data from the tutorial
         self.gps.send_command(b"PMTK220,500")
