@@ -1,4 +1,4 @@
-from PitFrontend.DataLogging import logdata
+from PitFrontend.dataLogging import logdata
 
 from packet import ParsedPacket
 FILENAME = 'carData.csv'
