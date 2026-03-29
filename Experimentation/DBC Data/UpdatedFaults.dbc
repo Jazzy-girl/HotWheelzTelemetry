@@ -1,0 +1,54 @@
+VERSION "HIPBNYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY/4/%%%/4/'%**4YYY///"
+
+
+NS_ : 
+	NS_DESC_
+	CM_
+	BA_DEF_
+	BA_
+	VAL_
+	CAT_DEF_
+	CAT_
+	FILTER
+	BA_DEF_DEF_
+	EV_DATA_
+	ENVVAR_DATA_
+	SGTYPE_
+	SGTYPE_VAL_
+	BA_DEF_SGTYPE_
+	BA_SGTYPE_
+	SIG_TYPE_REF_
+	VAL_TABLE_
+	SIG_GROUP_
+	SIG_VALTYPE_
+	SIGTYPE_VALTYPE_
+
+BS_:
+
+BU_:
+
+
+BO_ 59 Msg1: 7 Vector__XXX
+ SG_ PackCurrent : 47|16@0+ (1,0) [0|0] "A" Vector__XXX
+ SG_ PackInstVoltage : 31|16@0+ (0.1,0) [0|0] "V" Vector__XXX
+ SG_ CRCChecksum : 7|8@0+ (1,64) [0|0] "" Vector__XXX
+ SG_ _12VSupply : 15|16@0+ (0.001,0) [0|0] "V" Vector__XXX
+
+BO_ 971 Msg2: 7 Vector__XXX
+ SG_ PackDCL : 55|8@0+ (1,0) [0|0] "" Vector__XXX
+ SG_ PackCCL : 39|16@0+ (1,0) [0|0] "" Vector__XXX
+ SG_ SimulatedSOC : 31|8@0+ (1,0) [0|0] "%" Vector__XXX
+ SG_ HighTemp : 23|8@0+ (1,0) [0|0] "C" Vector__XXX
+ SG_ LowTemp : 15|8@0+ (1,0) [0|0] "C" Vector__XXX
+ SG_ CRCChecksum : 7|8@0+ (1,981) [0|0] "" Vector__XXX
+
+BO_ 1714 Msg3: 8 Vector__XXX
+ SG_ CustomFlag : 63|8@0+ (1,0) [0|0] "" Vector__XXX
+ SG_ PackSOC : 55|8@0+ (0.5,0) [0|0] "%" Vector__XXX
+ SG_ PackRes : 39|16@0+ (1,0) [0|0] "Ohms" Vector__XXX
+ SG_ PackOpenVolt : 23|16@0+ (0.1,0) [0|0] "V" Vector__XXX
+ SG_ PackAmphours : 15|8@0+ (0.05,0) [0|0] "Ah" Vector__XXX
+ SG_ CRCChecksum : 7|8@0+ (1,1722) [0|0] "" Vector__XXX
+
+
+VAL_ 1714 CustomFlag 0 "False" 1 "True" ;

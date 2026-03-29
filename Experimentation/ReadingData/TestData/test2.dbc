@@ -1,0 +1,3 @@
+VERSION ""
+BO_ 256 TempSensor: 8 Vector__XXX
+SG_ Temp : 0|8@1+ (1,0) [0|100] ""  Vector__XXX
