@@ -1,6 +1,7 @@
 import struct
 import functools
 import math
+import time
 from typing import NamedTuple, Generator
 
 PACKET_FORMAT = "<xxHI dd H Hf Ih5H8B"
@@ -16,6 +17,7 @@ S_TO_HR = 3600
 
 PULSE_SPEED_MUL = WHEEL_CIRCUMFERENCE_FT / PULSES_PER_ROTATION * FT_TO_MI * S_TO_HR
 
+PACKET_LEN = 56
 
 def thermistor_temp(reading: int) -> tuple[float, float, float]:
     LOW_SIDE_RESISTOR = 10000
@@ -134,6 +136,12 @@ class RawPacket(NamedTuple):
             soc=0,
             fan_speed=0
         )
+    @staticmethod
+    def new() -> 'RawPacket':
+        """
+        Create a new packet without any fields
+        """
+        return RawPacket(0, time.monotonic_ns() // 1000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
     def update_from_bms(self, data: bytes | bytearray) -> 'RawPacket':
         """
         Update the packet with BMS data
@@ -214,6 +222,10 @@ class RawPacket(NamedTuple):
             bms_soc=self.soc * 0.5,
             bms_fan_speed=self.fan_speed,
         )
+    def apply(self, *sensors) -> 'RawPacket':
+        for sensor in sensors:
+            self = sensor.update_packet(self)
+        return self
 
 class ParsedPacket(NamedTuple):
     """

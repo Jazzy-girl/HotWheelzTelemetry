@@ -1,12 +1,5 @@
-import serial
-import os
 import sys
-import io
-import base64
-import math
-
-sys.path.append(os.path.join(os.path.split(__file__)[0], ".."))
-import packet
+from Telemetry.Pit.serial_recv import *
 
 if len(sys.argv) < 2 or len(sys.argv) > 3:
     print(f"Usage: {sys.argv[0]} <PORT | FILE> [baudrate]")
@@ -19,29 +12,20 @@ if not os.path.exists(port):
     print(f"{port} does not exist")
     sys.exit(2)
 
-def load_serial() -> io.TextIOWrapper:
-    ser = serial.Serial(port, baud)
-    ser.open()
-    return io.TextIOWrapper(io.BufferedReader(ser), newline='\n')
-
-interface = open(port) if os.path.isfile(port) else load_serial()
+interface = BackendInterface(port, baud)
 
 for line in interface:
     if len(line) == 0:
         print()
-    elif line[0] == '!':
-        if line[-1] == '\n':
-            line = line[:-1]
-        print("Text:", line[1:])
-    else:
-        print("Escaped:", line)
-        data = base64.decodebytes(line.encode('ascii'))
-        print("Hex:", data.hex(" "))
-        if len(data) == 56 and data[:2] == b"HW":
+    elif isinstance(line, PrettyBackendMessage):
+        print("Text:", line.pretty)
+    elif isinstance(line, BinaryBackendMessage):
+        print("Escaped:", line.raw)
+        print("Hex:", line.binary.hex(" "))
+        if isinstance(line, PacketBackendMessage):
             print("Decoded data:")
-            raw = packet.RawPacket.unpack_bytes(data)
-            checksum = packet.checksum_of_data(data)
-            pack = raw.parse()
+            checksum = packet.checksum_of_data(line.binary)
+            pack = line.packet.parse()
             print("Header:")
             print(f"  Provided checksum:   {hex(pack.checksum)}")
             print(f"  Calculated checksum: {hex(checksum)}")
@@ -68,7 +52,7 @@ for line in interface:
             print(f"  High temp:           therm {pack.bms_high_therm_id:3}, {pack.bms_high_temp}°C")
             print(f"  Low temp:            therm {pack.bms_low_therm_id:3}, {pack.bms_low_temp}°C")
             print(f"  Pack SoC:            {pack.bms_soc}%")
-            print(f"  Fan speed:           {pack.fan_speed}")
-            print(f"  Faults:              {pack.lo_faults.bit_count() + pack.hi_faults.bit_count()}")
+            print(f"  Fan speed:           {pack.bms_fan_speed}")
+            print(f"  Faults:              {pack.bms_faults.bit_count()}")
         else:
             print("Unknown data")
