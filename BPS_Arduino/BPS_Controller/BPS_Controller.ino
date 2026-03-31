@@ -45,8 +45,8 @@ CANSAME5x CAN;
 
 // I2C
 #define address 0x52
-unsigned char id1[12];
-unsigned char id2[12];
+#define messages_length 25
+unsigned char messages[messages_length];
 
 
 void setup() {
@@ -70,9 +70,9 @@ void setup() {
       fault();
      }
 
+
+  Wire.begin(address);
   Wire.onRequest(sendBuffered); // event for I2C requests
-  id1[3] = 1;
-  id2[3] = 2;
 
   Serial.println("End of setup");
 
@@ -84,40 +84,31 @@ void readCAN() {
   // Serial.println("CAN!");
   if(packetSize){
     long packetID = CAN.packetId();
-    if (packetID == correctID) {
-      for(int i = 0; i < HITEMP_INDEX; i++){ // skips past the fields until reaching the desired index.
-        Serial.print("field ");
-        Serial.print(i);
-        Serial.print(": ");
-        CAN.read();
+    if (packetID > 0 && packetID < 4) {
+      for(int i = (packetID - 1)*8; i < i + 8; i++){ // IDs are 1, 2, 3
+        messages[i] = CAN.read();
       }
-      int temp = CAN.read(); // index 2
-      while (CAN.available()) {
-        CAN.read();   // empties the CAN input buffer
-      }
+      
+      if (packetID == correctID) {
+        int tempindex = (correctID-1)*8;
+        int temp = messages[tempindex];
+        Serial.print("TEMP: ");
+        Serial.println(temp);
 
-      Serial.print("TEMP: ");
-      Serial.println(temp);
-
-      if (temp >= 55){
+        if (temp >= 55){
         fault(); 
+        }
       }
+      unsigned char idCheck = pow(2, packetID); // This makes some assumptions about how the feather handles pow(), need to check with actual board
+      messages[25] = messages[25] | idCheck;
+    }
+
+    while (CAN.available()) {
+      CAN.read();
     }
 
     // buffers other CAN messages
-    else {
-      if (packetID == 0x001) {
-        for (int i = 0; i < packetSize; i++) {
-          id1[i+4] = CAN.read();
-        }
-      }
 
-      else if (packetID == 0x002) {
-        for (int i = 0; i < packetSize; i++) {
-          id2[i+4] = CAN.read();
-        }
-      }
-    }
 
   // DEBUGGING CAN MESSAGES
   // if (packetSize >= 3) {
@@ -138,10 +129,10 @@ void readCAN() {
 }
 
 void sendBuffered() {
-
-  Wire.write(id1, 8);
-  Wire.write(id2, 8);
-
+  Wire.write(messages, messages_length);
+  for (int i = 0; i < messages_length; i++) {    //clear message buffer
+    messages[i] = 0;
+  }
 }
 
 void fault() {
