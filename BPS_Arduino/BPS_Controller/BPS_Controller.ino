@@ -27,6 +27,7 @@ Output to MPS Safety Circuit (via Nano intermediary):
 */
 
 #include <CANSAME5x.h>
+#include <Wire.h>
 
 CANSAME5x CAN;
 
@@ -41,6 +42,11 @@ CANSAME5x CAN;
 #define OFFSET -40
 
  // If MPS is HIGH or Hitemp >= 55, Fault (HIGH; 5V) else output LOW; 0V
+
+// I2C
+#define address 0x52
+unsigned char id1[12];
+unsigned char id2[12];
 
 
 void setup() {
@@ -63,6 +69,10 @@ void setup() {
       Serial.println("CAN.begin(...) failed.");
       fault();
      }
+
+  Wire.onRequest(sendBuffered); // event for I2C requests
+  id1[3] = 1;
+  id2[3] = 2;
 
   Serial.println("End of setup");
 
@@ -94,6 +104,21 @@ void readCAN() {
       }
     }
 
+    // buffers other CAN messages
+    else {
+      if (packetID == 0x001) {
+        for (int i = 0; i < packetSize; i++) {
+          id1[i+4] = CAN.read();
+        }
+      }
+
+      else if (packetID == 0x002) {
+        for (int i = 0; i < packetSize; i++) {
+          id2[i+4] = CAN.read();
+        }
+      }
+    }
+
   // DEBUGGING CAN MESSAGES
   // if (packetSize >= 3) {
   //   Serial.print("Received packet with id ");
@@ -110,6 +135,13 @@ void readCAN() {
     
   }
   delay(500);
+}
+
+void sendBuffered() {
+
+  Wire.write(id1, 8);
+  Wire.write(id2, 8);
+
 }
 
 void fault() {
