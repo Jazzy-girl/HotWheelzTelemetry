@@ -1,7 +1,6 @@
 import board
 import digitalio
 import busio
-from adafruit_bus_device.i2c_device import I2CDevice
 import adafruit_mcp2515
 from adafruit_mcp2515.canio import Message
 from Telemetry.packet import RawPacket
@@ -28,21 +27,24 @@ class BMS(SensorBase):
         self.device = devices[0]
         
     
-        
+    
     def update(self):
     #    while msg := self.listener.receive():
     #        if isinstance(msg, Message):
     #            start = msg.id * 8
     #            end = start + len(msg.data)
     #            self.message[start:end] = msg.data
-        id1, id2, id3, = False, False, False
+        id1, id2, id3, = False, False, False    #
         while (not (id1 and id2 and id3)):
             result = bytearray(25)
             self.i2c.readfrom_into(self.device, result)
             idCheck = result.pop
-            id1 = (((idCheck >> 1) & 1) == True)
-            id2 = (((idCheck >> 2) & 1) == True)
-            id3 = (((idCheck >> 3) & 1) == True)
+            if not id1:
+                id1 = (((idCheck >> 1) & 1) == True)
+            if not id2:
+                id2 = (((idCheck >> 2) & 1) == True)
+            if not id2:
+                id3 = (((idCheck >> 3) & 1) == True)
 
             for i in range(0, len(self.message)):
                 if result[i] == 0:

@@ -85,12 +85,15 @@ void readCAN() {
   if(packetSize){
     long packetID = CAN.packetId();
     if (packetID > 0 && packetID < 4) {
-      for(int i = (packetID - 1)*8; i < i + 8; i++){ // IDs are 1, 2, 3
+      
+      int i = (packetID - 1) * 8;
+      int end = i + 8;
+      for(; i < end; ++i){ // IDs are 1, 2, 3
         messages[i] = CAN.read();
       }
       
       if (packetID == correctID) {
-        int tempindex = (correctID-1)*8;
+        int tempindex = (correctID-1) * 8 + HITEMP_INDEX;
         int temp = messages[tempindex];
         Serial.print("TEMP: ");
         Serial.println(temp);
@@ -99,30 +102,28 @@ void readCAN() {
         fault(); 
         }
       }
-      unsigned char idCheck = pow(2, packetID); // This makes some assumptions about how the feather handles pow(), need to check with actual board
-      messages[25] = messages[25] | idCheck;
+      unsigned char idCheck = (1 << packetID);
+      messages[24] = messages[24] | idCheck;
     }
 
     while (CAN.available()) {
       CAN.read();
     }
 
-    // buffers other CAN messages
 
-
-  // DEBUGGING CAN MESSAGES
-  // if (packetSize >= 3) {
-  //   Serial.print("Received packet with id ");
-  //   long packetID = CAN.packetId();
-  //   Serial.println(packetID);
-  //   Serial.println(packetID, HEX);
-  //   for(int i = 0; i < packetSize; i++){
-  //     Serial.print("field ");
-  //     Serial.print(i);
-  //     Serial.print(": ");
-  //     Serial.println(CAN.read());
-  //    }  
-  // }
+    // DEBUGGING CAN MESSAGES
+    // if (packetSize >= 3) {
+    //   Serial.print("Received packet with id ");
+    //   long packetID = CAN.packetId();
+    //   Serial.println(packetID);
+    //   Serial.println(packetID, HEX);
+    //   for(int i = 0; i < packetSize; i++){
+    //     Serial.print("field ");
+    //     Serial.print(i);
+    //     Serial.print(": ");
+    //     Serial.println(CAN.read());
+    //    }  
+    // }
     
   }
   delay(500);
@@ -130,9 +131,7 @@ void readCAN() {
 
 void sendBuffered() {
   Wire.write(messages, messages_length);
-  for (int i = 0; i < messages_length; i++) {    //clear message buffer
-    messages[i] = 0;
-  }
+  messages[24] = 0;
 }
 
 void fault() {
