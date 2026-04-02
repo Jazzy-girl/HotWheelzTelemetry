@@ -22,6 +22,9 @@ FIELDS = [
     "12v Supply"
 ]
 
+"""
+Dashboard
+"""
 class Dashboard:
     root = tk.Tk()
     root.title("Dashboard")
