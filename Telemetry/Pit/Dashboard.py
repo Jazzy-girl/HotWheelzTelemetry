@@ -24,6 +24,16 @@ FIELDS = [
 
 """
 Dashboard
+
+Graphs...
+    Speed over time- select area of track
+    Cockpit temp / time
+    Pack Open Voltage / time
+    Current / time
+    Highest temp / time
+
+For the non-speed over time graphs:
+    store the last # entries. Use a ring buffer (?) or a deque
 """
 class Dashboard:
     root = tk.Tk()
@@ -54,6 +64,7 @@ class Dashboard:
         label.pack(pady=5)
         return frame, label
 
+    
     def _create_plot(self, parent, title):
         fig, ax = plt.subplots(figsize=(5, 4), dpi=100)
         ax.plot([0, 1, 2, 3], [random.randint(0, 10) for _ in range(4)])
