@@ -12,7 +12,7 @@ const char* BASE_PING = "HW PING ";
 const char* BASE_PONG = "HW PONG ";
 
 #define PREFIX_LEN  8
-#define MESSGE_LEN  12
+#define MESSAGE_LEN  12
 #define PAYLOAD_LEN 4
 
 #define ERROR_PREFIX_LEN 27
@@ -33,12 +33,12 @@ void initRadio() {
     digitalWrite(RFM95_RST, HIGH);
     delay(10);
 
-    if (!rf.init()) {
+    while (!rf.init()) {
         Serial.println("Initialization failed!");
-        while (1);
+        // while (1);
     }
 
-    if (!rf.setFrequency(RF95_FREQ)) {
+    while (!rf.setFrequency(RF95_FREQ)) {
         Serial.println("Frequency failed!");
         while (1);
     }

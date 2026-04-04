@@ -1,0 +1,4 @@
+adafruit-circuitpython-mcp2515
+adafruit-circuitpython-mcp3xxx
+adafruit-circuitpython-rfm9x
+adafruit-circuitpython-gps

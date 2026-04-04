@@ -6,6 +6,7 @@
 #include "common.h"
 
 void setup() {
+    while (!Serial);
     Serial.begin(9600);
     Serial.println("Starting PING board");
 
@@ -38,7 +39,7 @@ void loop() {
 
     long sendStart = micros();
     rf.send((uint8_t*)buf, MESSAGE_LEN);
-    rf.waitPacketSent();
+    // rf.waitPacketSent();
     long sendEnd = micros();
 
     Serial.print("Sent in ");
@@ -53,7 +54,7 @@ void loop() {
     do {
         currentRx = micros();
         uint8_t len = RH_RF95_MAX_MESSAGE_LEN;
-        if (rf.available() && rf.recv(buf, &len)) {
+        if (rf.available() && rf.recv((uint8_t*)buf, &len)) {
             ++received;
             if (len == MESSAGE_LEN && !memcmp(buf, BASE_PONG, PREFIX_LEN)) {
                 // we're receiving a pong

@@ -6,6 +6,7 @@
 #include "common.h"
 
 void setup() {
+    while (!Serial);
     Serial.begin(9600);
     Serial.println("Starting PONG board");
 
@@ -13,8 +14,8 @@ void setup() {
 }
 void loop() {
     uint8_t len = RH_RF95_MAX_MESSAGE_LEN;
-    if (rf.available() && rf.recv(buf, &len)) {
-        if (len == MESSAGE_LEN && !memcmp(buf, BASE_TX, PREFIX_LEN)) {
+    if (rf.available() && rf.recv((uint8_t*)buf, &len)) {
+        if (len == MESSAGE_LEN && !memcmp(buf, BASE_PING, PREFIX_LEN)) {
             buf[1] = 'O'; // change the PING to PONG
 
             long sendStart = micros();
