@@ -6,6 +6,8 @@ Ryanne Wilson
 
 BPS Controller - Arduino Feather M4 CAN
 
+Sends CAN messages over I2C. LSB of last byte (25th byte) is parity bit. Uses even parity, so there should be an even number of 1s.
+
 Inputs from BMS :
   Multi-Purpose Output (MPO)
   High (5 V) = BPS Fault
@@ -41,17 +43,27 @@ CANSAME5x CAN;
 #define HITEMP_INDEX 2 // Index of High Temprature in CAN message
 #define OFFSET -40
 
- // If MPS is HIGH or Hitemp >= 55, Fault (HIGH; 5V) else output LOW; 0V
+// If MPS is HIGH or Hitemp >= 55, Fault (HIGH; 5V) else output LOW; 0V
 
 // I2C
 #define address 0x52
 #define messages_length 25
 unsigned char messages[messages_length];
 
+// parity lookup table (0 = even, 1 = odd)
+const byte lookup[] =
+    {0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1, 0, 1, 0, 0, 1, 0, 1, 1, 0, 0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0,
+     1, 1, 0, 0, 1, 1, 0, 1, 0, 0, 1, 0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1, 0, 1, 0, 0, 1, 0, 1, 1, 0, 0,
+     1, 1, 0, 1, 0, 0, 1, 0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1, 0, 0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1,
+     1, 0, 1, 0, 0, 1, 0, 1, 1, 0, 0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1, 0, 0, 1, 1, 0, 1, 0, 0, 1, 0, 1, 1,
+     0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1, 0, 0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1, 0, 1, 0, 0, 1, 0, 1, 1,
+     0, 0, 1, 1, 0, 1, 0, 0, 1, 0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1, 0, 1, 0, 0, 1, 0, 1, 1, 0, 0, 1, 1, 0,
+     1, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1, 0, 0, 1, 1, 0, 1, 0, 0, 1, 0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1, 0};
 
-void setup() {
+void setup()
+{
   // put your setup code here, to run once:
-  
+
   // BPS Fault -> Output to Nano
   pinMode(BPS_Fault, OUTPUT);
   digitalWrite(BPS_Fault, LOW);
@@ -65,51 +77,56 @@ void setup() {
   Serial.begin(115200);
   // while(!Serial);  // THIS FOR DEBUGGING. TURN OFF FOR ACTUAL USE.
 
-  if(!CAN.begin(bitrate)){ // Fault if CAN begin fails?
-      Serial.println("CAN.begin(...) failed.");
-      fault();
-     }
-
+  if (!CAN.begin(bitrate))
+  { // Fault if CAN begin fails?
+    Serial.println("CAN.begin(...) failed.");
+    fault();
+  }
 
   Wire.begin(address);
   Wire.onRequest(sendBuffered); // event for I2C requests
 
   Serial.println("End of setup");
-
 }
 
-void readCAN() {
+void readCAN()
+{
   int packetSize = CAN.parsePacket();
 
   // Serial.println("CAN!");
-  if(packetSize){
+  if (packetSize)
+  {
     long packetID = CAN.packetId();
-    if (packetID > 0 && packetID < 4) {
-      
+    if (packetID > 0 && packetID < 4)
+    {
+
       int i = (packetID - 1) * 8;
       int end = i + 8;
-      for(; i < end; ++i){ // IDs are 1, 2, 3
+      for (; i < end; ++i)
+      { // IDs are 1, 2, 3
         messages[i] = CAN.read();
       }
-      
-      if (packetID == correctID) {
-        int tempindex = (correctID-1) * 8 + HITEMP_INDEX;
+
+      if (packetID == correctID)
+      {
+        int tempindex = (correctID - 1) * 8 + HITEMP_INDEX;
         int temp = messages[tempindex];
         Serial.print("TEMP: ");
         Serial.println(temp);
 
-        if (temp >= 55){
-        fault(); 
+        if (temp >= 55)
+        {
+          fault();
         }
       }
       unsigned char idCheck = (1 << packetID);
       messages[24] = messages[24] | idCheck;
     }
 
-    while (CAN.available()) {
+    while (CAN.available())
+    {
       CAN.read();
     }
-
 
     // DEBUGGING CAN MESSAGES
     // if (packetSize >= 3) {
@@ -122,26 +139,35 @@ void readCAN() {
     //     Serial.print(i);
     //     Serial.print(": ");
     //     Serial.println(CAN.read());
-    //    }  
+    //    }
     // }
-    
   }
   delay(500);
 }
 
-void sendBuffered() {
+void sendBuffered()
+{
+  byte checksum = 0;
+  messages[24] &= 0xFE; // clear the LSB of the last byte!
+  for (int i = 0; i < messages_length; ++i)
+  {
+    checksum ^= lookup[messages[i]];
+  }
+  messages[24] |= checksum; // make LSB of last byte 1 or 0 to ensure even number of 1s.
   Wire.write(messages, messages_length);
-  messages[24] = 0;
+  messages[24] = 0; // set back to 0.
 }
 
-void fault() {
+void fault()
+{
   digitalWrite(BPS_Fault, HIGH);
-  while(1);
+  while (1)
+    ;
 }
 
-void loop() {
+void loop()
+{
   // put your main code here, to run repeatedly:
-  
-  readCAN();
 
+  readCAN();
 }
