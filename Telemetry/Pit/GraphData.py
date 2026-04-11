@@ -4,7 +4,7 @@ class GraphDataInterface():
     def __init__(self, parsedPackets: deque[ParsedPacket], maxLength: int) -> None:
         self.parsedPackets = parsedPackets
         self.maxLength = maxLength
-        self.data = deque()
+        self.data = deque[int | float]()
         for el in self.parsedPackets:
             self.addData(el)
 
