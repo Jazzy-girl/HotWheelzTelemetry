@@ -92,6 +92,7 @@ class Dashboard:
         # map frame
         self.map_frame = self._makeFrame(self.right_frame, "white", tk.BOTTOM)
         
+        
     
     def start(self):
         self.root.after(100, self._randGenParsed)
