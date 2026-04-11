@@ -22,7 +22,10 @@ class Graph:
     def update(self):
         self.ax.clear()
         self.ax.plot(self.input.getData())
-        self.root.after(1000, self.update)
+        self.ax.set_ylim(0,100)
+        print(self.input.getData())
+        self.root.after(500, self.update)
+        self.canvas.draw_idle()
         print("Updated!")
         # self.line.set_ydata(list(self.input.getData()))
         # return self.line,
@@ -32,6 +35,7 @@ class Graph:
         fig = Figure() #figsize (,) in inches; dpi dots/inch
         self.ax = fig.add_subplot()
         self.line, = self.ax.plot(self.input.getData())
+        self.ax.set_ylim(0,100)
 
         self.canvas = FigureCanvasTkAgg(fig, master=self.container)
         self.canvas.draw()

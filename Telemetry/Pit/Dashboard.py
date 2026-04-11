@@ -1,12 +1,13 @@
 from Telemetry.Pit.GraphData import *
 from Telemetry.Pit.Graph import Graph
-from Telemetry.packet import ParsedPacket
+from Telemetry.packet import ParsedPacket, FaultSet
 
 import tkinter as tk
 #import matplotlib.pyplot as plt
 #from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import random
 import time
+from random import randint
 
 
 
@@ -49,10 +50,14 @@ class Dashboard:
     background = "black"
     root.geometry("1200x800")
     root.state('zoomed')
+    MAX_ELEMENTS = 30
 
     def __init__(self) -> None:
+        self.main_panel = tk.Frame(self.root, bg=self.background)
+        self.main_panel.pack(side=tk.RIGHT, expand=True, fill=tk.BOTH)
+
         # Field Frame
-        self.field_frame = tk.Frame(self.root, bg=self.background, width = 300)
+        self.field_frame = tk.Frame(self.main_panel, bg=self.background, width = 300)
         self.field_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         self.field_frame.pack_propagate(False)
 
@@ -61,19 +66,32 @@ class Dashboard:
         self.field_value = self._makeLabel(self.field_frame, "Values")
 
         # graph frame
-        self.graph_frame = tk.Frame(self.root, bg="white", borderwidth=7, relief=tk.SUNKEN)
+        self.graph_frame = tk.Frame(self.main_panel, bg="white", borderwidth=7, relief=tk.SUNKEN)
         self.graph_frame.pack(side=tk.TOP, expand=True, fill=tk.BOTH)
-        self.graph_frame, self.graph_label = self._box(self.graph_frame, "Graph Area", width = 1000, height = 600)
+        # self.graph_frame, self.graph_label = self._box(self.graph_frame, "Graph Area", width = 1000, height = 600)
 
         self.parsedPackets: deque[ParsedPacket]
         self.parsedPackets = deque()
 
-        self.graph_data = GraphDataCockpit(self.parsedPackets, 50)
+        self.graph_data = GraphDataCockpit(self.parsedPackets, self.MAX_ELEMENTS)
         self.graph = Graph(self.graph_data, self.graph_frame, self.root)
     
     def start(self):
+        self.root.after(100, self._randGenParsed)
         self.root.after(1000, self.graph.start)
+        
         self.root.mainloop()
+    
+    def _randGenParsed(self):
+        parsed = ParsedPacket(randint(0,100),randint(0,100),randint(0,100),randint(0,100),randint(0,100),
+                              randint(0,100),randint(0,100),randint(0,100),randint(0,100),randint(0,100),
+                              FaultSet(0),randint(0,100),randint(0,100),randint(0,100),randint(0,100),randint(0,100),
+                              randint(0,100),randint(0,100),randint(0,100),randint(0,100),randint(0,100),randint(0,100),
+                              randint(0,100),randint(0,100),randint(0,100))
+        self.graph_data.addElement(parsed)
+        print("rand gen parsed!")
+        self.root.after(500, self._randGenParsed)
+    
     
     def _makeLabel(self, parent, text):
         label = tk.Label(parent, text=text, bg="white", font=("Comic Sans MS", 16))
