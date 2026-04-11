@@ -55,16 +55,16 @@ class Dashboard:
     root.state('zoomed')
     MAX_ELEMENTS = 30
 
-    def _makeFrame(self, parent, side):
-        frame = tk.Frame(parent, bg=self.background)
-        frame.pack(side, expand=True, fill=tk.BOTH)
+    def _makeFrame(self, parent, bg, side):
+        frame = tk.Frame(parent, bg=bg)
+        frame.pack(side=side, expand=True, fill=tk.BOTH)
         return frame
     
     def __init__(self) -> None:
         self.main_panel = tk.Frame(self.root, bg=self.background)
         self.main_panel.pack(side=tk.RIGHT, expand=True, fill=tk.BOTH)
 
-        self.right_frame = self._makeFrame(self.main_panel, tk.RIGHT)
+        self.right_frame = self._makeFrame(self.main_panel, self.background, tk.RIGHT)
 
         # Field Frame
         self.field_frame = tk.Frame(self.main_panel, bg=self.background, width = 300)
@@ -77,7 +77,7 @@ class Dashboard:
 
         # graph frame
         self.graph_frame = tk.Frame(self.right_frame, bg="white", borderwidth=7, relief=tk.SUNKEN)
-        self.graph_frame.pack(side=tk.BOTTOM, expand=True, fill=tk.BOTH)
+        self.graph_frame.pack(side=tk.TOP, expand=True, fill=tk.BOTH)
 
         self.graph_label = tk.Label(self.graph_frame, text="GRAPH", bg="white", font=("Comic Sans MS", 16))
         self.graph_label.pack()
@@ -90,7 +90,7 @@ class Dashboard:
         self.graph = Graph(self.graph_data, self.graph_frame, self.root, self.MAX_ELEMENTS)
 
         # map frame
-        self.map_frame = self._makeFrame(self.main_panel, tk.TOP)
+        self.map_frame = self._makeFrame(self.right_frame, "white", tk.BOTTOM)
         
     
     def start(self):
@@ -127,29 +127,36 @@ class Dashboard:
 dashboard = Dashboard()
 dashboard.start()
 
-#     def _create_plot(self, parent, title):
-#         fig, ax = plt.subplots(figsize=(5, 4), dpi=100)
-#         ax.plot([0, 1, 2, 3], [random.randint(0, 10) for _ in range(4)])
-#         ax.set_title(title)
+# def box(parent, title_text, width=150, height = 120):
+#     frame = tk.Frame(parent, bg="white", relief=tk.RIDGE, width=width, height=height, borderwidth=5)
+#     frame.grid_propagate(False)
+#     label = tk.Label(frame, text=title_text, bg="white", font=("Comic Sans MS", 16))
+#     label.pack(pady=5)
+#     return frame, label
 
-#         canvas = FigureCanvasTkAgg(fig, master=parent)
-#         canvas.draw()
-#         canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
-#         return canvas
+# def create_plot(parent, title):
+#     fig, ax = plt.subplots(figsize=(5, 4), dpi=100)
+#     ax.plot([0, 1, 2, 3], [random.randint(0, 10) for _ in range(4)])
+#     ax.set_title(title)
 
+#     canvas = FigureCanvasTkAgg(fig, master=parent)
+#     canvas.draw()
+#     canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
+#     return canvas
 
-
-
-
+# #left
+# left_frame = tk.Frame(root, bg=background, width = 300)
+# left_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+# left_frame.pack_propagate(False)
 # #use matplotlib to create graph corresponding to each box on the left side
 # #6 by 2 grid of boxes on the left side
 # boxes = []
 # for i in range(6):
 #     for j in range(2):
-#         box_frame, box_label = box(field_frame, f"Box {i*2 + j + 1}")
-#         box_frame.grid(row=i, column=j)
-#         # field_frame.grid_rowconfigure(i, weight=1)
-#         # field_frame.grid_columnconfigure(j, weight=1)
+#         box_frame, box_label = box(left_frame, f"Box {i*2 + j + 1}")
+#         box_frame.grid(row=i, column=j, padx=3, pady=3)
+#         left_frame.grid_rowconfigure(i, weight=1)
+#         left_frame.grid_columnconfigure(j, weight=1)
 #         boxes.append((box_frame, box_label))
 
 # #right
@@ -167,4 +174,6 @@ dashboard.start()
 
 # root.mainloop()
    
+
+
 
