@@ -12,15 +12,18 @@ from matplotlib.axes import Axes
 import tkinter as tk
 class Graph:
 
-    def __init__(self, input: GraphDataInterface, container) -> None:
+    def __init__(self, input: GraphDataInterface, container, root: tk.Tk) -> None:
         self.input = input
         self.line: Line2D
         self.container = container
         self.ax: Axes
+        self.root = root
 
     def update(self):
         self.ax.clear()
         self.ax.plot(self.input.getData())
+        self.root.after(1000, self.update)
+        print("Updated!")
         # self.line.set_ydata(list(self.input.getData()))
         # return self.line,
 
@@ -33,6 +36,8 @@ class Graph:
         self.canvas = FigureCanvasTkAgg(fig, master=self.container)
         self.canvas.draw()
         self.canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
+        self.root.after(100, self.update)
+        print("Start!")
 
         # ani = FuncAnimation(fig, self.update, interval=50, blit=True)
         # plt.show()

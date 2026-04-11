@@ -69,7 +69,7 @@ class Dashboard:
         self.parsedPackets = deque()
 
         self.graph_data = GraphDataCockpit(self.parsedPackets, 50)
-        self.graph = Graph(self.graph_data, self.graph_frame)
+        self.graph = Graph(self.graph_data, self.graph_frame, self.root)
     
     def start(self):
         self.root.after(1000, self.graph.start)
