@@ -8,6 +8,7 @@ import tkinter as tk
 import random
 import time
 from random import randint
+from PIL import Image, ImageTk
 
 
 
@@ -54,6 +55,7 @@ class Dashboard:
     root.geometry("1200x800")
     root.state('zoomed')
     MAX_ELEMENTS = 30
+    MAP_FILE = "Telemetry/Pit/trackMap.png"
 
     def _makeFrame(self, parent, bg, side):
         frame = tk.Frame(parent, bg=bg)
@@ -64,11 +66,11 @@ class Dashboard:
         self.main_panel = tk.Frame(self.root, bg=self.background)
         self.main_panel.pack(side=tk.RIGHT, expand=True, fill=tk.BOTH)
 
-        self.right_frame = self._makeFrame(self.main_panel, self.background, tk.RIGHT)
+        self.graph_map_frame = self._makeFrame(self.main_panel, self.background, tk.TOP)
 
         # Field Frame
         self.field_frame = tk.Frame(self.main_panel, bg=self.background, width = 300)
-        self.field_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        self.field_frame.pack(side=tk.BOTTOM, fill=tk.BOTH, expand=True)
         self.field_frame.pack_propagate(False)
 
         # make field labels
@@ -76,8 +78,8 @@ class Dashboard:
         self.field_value = self._makeLabel(self.field_frame, "Values")
 
         # graph frame
-        self.graph_frame = tk.Frame(self.right_frame, bg="white", borderwidth=7, relief=tk.SUNKEN)
-        self.graph_frame.pack(side=tk.TOP, expand=True, fill=tk.BOTH)
+        self.graph_frame = tk.Frame(self.graph_map_frame, bg="white", borderwidth=7, relief=tk.SUNKEN)
+        self.graph_frame.pack(side=tk.LEFT, expand=True, fill=tk.BOTH)
 
         self.graph_label = tk.Label(self.graph_frame, text="GRAPH", bg="white", font=("Comic Sans MS", 16))
         self.graph_label.pack()
@@ -90,8 +92,14 @@ class Dashboard:
         self.graph = Graph(self.graph_data, self.graph_frame, self.root, self.MAX_ELEMENTS)
 
         # map frame
-        self.map_frame = self._makeFrame(self.right_frame, "white", tk.BOTTOM)
-        
+        self.map_frame = self._makeFrame(self.graph_map_frame, "white", tk.RIGHT)
+        img = Image.open(self.MAP_FILE)
+        img_data = img.resize((250, 250)) # frame dimensions
+        self.map_img = ImageTk.PhotoImage(img_data)
+
+        self.map_label = tk.Label(self.map_frame, image=self.map_img)
+
+        self.map_label.pack()
         
     
     def start(self):
