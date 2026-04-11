@@ -1,8 +1,16 @@
+from Telemetry.Pit.GraphData import *
+from Telemetry.Pit.Graph import Graph
+from Telemetry.packet import ParsedPacket
+
 import tkinter as tk
 #import matplotlib.pyplot as plt
 #from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import random
 import time
+
+
+
+from collections import deque
 
 FIELDS = [
     "Speed",
@@ -52,57 +60,76 @@ class Dashboard:
         self.field_label = self._makeLabel(self.field_frame, "Fields").grid
         self.field_value = self._makeLabel(self.field_frame, "Values")
 
+        # graph frame
+        self.graph_frame = tk.Frame(self.root, bg="white", borderwidth=7, relief=tk.SUNKEN)
+        self.graph_frame.pack(side=tk.TOP, expand=True, fill=tk.BOTH)
+        self.graph_frame, self.graph_label = self._box(self.graph_frame, "Graph Area", width = 1000, height = 600)
+
+        self.parsedPackets: deque[ParsedPacket]
+        self.parsedPackets = deque()
+
+        self.graph_data = GraphDataCockpit(self.parsedPackets, 50)
+        self.graph = Graph(self.graph_data, self.graph_frame)
+    
+    def start(self):
+        self.root.after(1000, self.graph.start)
+        self.root.mainloop()
     
     def _makeLabel(self, parent, text):
         label = tk.Label(parent, text=text, bg="white", font=("Comic Sans MS", 16))
         return label
 
     def _box(self, parent, title_text, width=150, height = 120):
+        """
+        Makes a box. Can determine width and height.
+        """
         frame = tk.Frame(parent, bg="white", relief=tk.RIDGE, width=width, height=height, borderwidth=5)
         frame.grid_propagate(False)
         label = tk.Label(frame, text=title_text, bg="white", font=("Comic Sans MS", 16))
         label.pack(pady=5)
         return frame, label
 
-    
-    def _create_plot(self, parent, title):
-        fig, ax = plt.subplots(figsize=(5, 4), dpi=100)
-        ax.plot([0, 1, 2, 3], [random.randint(0, 10) for _ in range(4)])
-        ax.set_title(title)
+dashboard = Dashboard()
+dashboard.start()
 
-        canvas = FigureCanvasTkAgg(fig, master=parent)
-        canvas.draw()
-        canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
-        return canvas
+#     def _create_plot(self, parent, title):
+#         fig, ax = plt.subplots(figsize=(5, 4), dpi=100)
+#         ax.plot([0, 1, 2, 3], [random.randint(0, 10) for _ in range(4)])
+#         ax.set_title(title)
 
-
-
-
-
-#use matplotlib to create graph corresponding to each box on the left side
-#6 by 2 grid of boxes on the left side
-boxes = []
-for i in range(6):
-    for j in range(2):
-        box_frame, box_label = box(field_frame, f"Box {i*2 + j + 1}")
-        box_frame.grid(row=i, column=j)
-        # field_frame.grid_rowconfigure(i, weight=1)
-        # field_frame.grid_columnconfigure(j, weight=1)
-        boxes.append((box_frame, box_label))
-
-#right
-main_panel = tk.Frame(root, bg=background)
-main_panel.pack(side=tk.RIGHT, expand=True, fill=tk.BOTH)
-graph_frame = tk.Frame(main_panel, bg="white", borderwidth=7, relief=tk.SUNKEN)
-gps_frame = tk.Frame(main_panel, bg="lightgrey", borderwidth=7, relief=tk.SUNKEN)
-graph_frame.pack(side=tk.TOP, expand=True, fill=tk.BOTH)
-gps_frame.pack(side=tk.BOTTOM, expand=True, fill=tk.BOTH)
-
-graph_frame, graph_label = box(graph_frame, "Graph Area", width = 1000, height = 600)
-gps_frame, gps_label = box(gps_frame, "GPS Data Area", width = 1000, height = 600)
+#         canvas = FigureCanvasTkAgg(fig, master=parent)
+#         canvas.draw()
+#         canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
+#         return canvas
 
 
 
-root.mainloop()
+
+
+# #use matplotlib to create graph corresponding to each box on the left side
+# #6 by 2 grid of boxes on the left side
+# boxes = []
+# for i in range(6):
+#     for j in range(2):
+#         box_frame, box_label = box(field_frame, f"Box {i*2 + j + 1}")
+#         box_frame.grid(row=i, column=j)
+#         # field_frame.grid_rowconfigure(i, weight=1)
+#         # field_frame.grid_columnconfigure(j, weight=1)
+#         boxes.append((box_frame, box_label))
+
+# #right
+# main_panel = tk.Frame(root, bg=background)
+# main_panel.pack(side=tk.RIGHT, expand=True, fill=tk.BOTH)
+# graph_frame = tk.Frame(main_panel, bg="white", borderwidth=7, relief=tk.SUNKEN)
+# gps_frame = tk.Frame(main_panel, bg="lightgrey", borderwidth=7, relief=tk.SUNKEN)
+# graph_frame.pack(side=tk.TOP, expand=True, fill=tk.BOTH)
+# gps_frame.pack(side=tk.BOTTOM, expand=True, fill=tk.BOTH)
+
+# graph_frame, graph_label = box(graph_frame, "Graph Area", width = 1000, height = 600)
+# gps_frame, gps_label = box(gps_frame, "GPS Data Area", width = 1000, height = 600)
+
+
+
+# root.mainloop()
    
 

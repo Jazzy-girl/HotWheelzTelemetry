@@ -1,6 +1,8 @@
+from Telemetry.Pit.GraphData import GraphDataInterface
+
 from collections import deque
 from typing import Any
-from GraphData import GraphDataInterface
+
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import matplotlib.pyplot as plt

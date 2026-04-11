@@ -1,4 +1,4 @@
-from packet import ParsedPacket
+from Telemetry.packet import ParsedPacket
 from collections import deque
 class GraphDataInterface():
     def __init__(self, parsedPackets: deque[ParsedPacket], maxLength: int) -> None:
