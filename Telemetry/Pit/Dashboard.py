@@ -30,6 +30,9 @@ FIELDS = [
     "Low Cell Voltage ID",
     "12v Supply"
 ]
+"""
+All 15 fields that must be displayed.
+"""
 
 """
 Dashboard
@@ -52,9 +55,16 @@ class Dashboard:
     root.state('zoomed')
     MAX_ELEMENTS = 30
 
+    def _makeFrame(self, parent, side):
+        frame = tk.Frame(parent, bg=self.background)
+        frame.pack(side, expand=True, fill=tk.BOTH)
+        return frame
+    
     def __init__(self) -> None:
         self.main_panel = tk.Frame(self.root, bg=self.background)
         self.main_panel.pack(side=tk.RIGHT, expand=True, fill=tk.BOTH)
+
+        self.right_frame = self._makeFrame(self.main_panel, tk.RIGHT)
 
         # Field Frame
         self.field_frame = tk.Frame(self.main_panel, bg=self.background, width = 300)
@@ -66,15 +76,22 @@ class Dashboard:
         self.field_value = self._makeLabel(self.field_frame, "Values")
 
         # graph frame
-        self.graph_frame = tk.Frame(self.main_panel, bg="white", borderwidth=7, relief=tk.SUNKEN)
-        self.graph_frame.pack(side=tk.TOP, expand=True, fill=tk.BOTH)
+        self.graph_frame = tk.Frame(self.right_frame, bg="white", borderwidth=7, relief=tk.SUNKEN)
+        self.graph_frame.pack(side=tk.BOTTOM, expand=True, fill=tk.BOTH)
+
+        self.graph_label = tk.Label(self.graph_frame, text="GRAPH", bg="white", font=("Comic Sans MS", 16))
+        self.graph_label.pack()
         # self.graph_frame, self.graph_label = self._box(self.graph_frame, "Graph Area", width = 1000, height = 600)
 
         self.parsedPackets: deque[ParsedPacket]
         self.parsedPackets = deque()
 
         self.graph_data = GraphDataCockpit(self.parsedPackets, self.MAX_ELEMENTS)
-        self.graph = Graph(self.graph_data, self.graph_frame, self.root)
+        self.graph = Graph(self.graph_data, self.graph_frame, self.root, self.MAX_ELEMENTS)
+
+        # map frame
+        self.map_frame = self._makeFrame(self.main_panel, tk.TOP)
+        
     
     def start(self):
         self.root.after(100, self._randGenParsed)

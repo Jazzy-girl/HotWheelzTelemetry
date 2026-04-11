@@ -12,17 +12,19 @@ from matplotlib.axes import Axes
 import tkinter as tk
 class Graph:
 
-    def __init__(self, input: GraphDataInterface, container, root: tk.Tk) -> None:
+    def __init__(self, input: GraphDataInterface, container, root: tk.Tk, max_xlen: int) -> None:
         self.input = input
         self.line: Line2D
         self.container = container
         self.ax: Axes
         self.root = root
+        self.maxlen = max_xlen
 
     def update(self):
         self.ax.clear()
         self.ax.plot(self.input.getData())
         self.ax.set_ylim(0,100)
+        self.ax.set_xlim(0,self.maxlen)
         print(self.input.getData())
         self.root.after(500, self.update)
         self.canvas.draw_idle()
@@ -36,6 +38,7 @@ class Graph:
         self.ax = fig.add_subplot()
         self.line, = self.ax.plot(self.input.getData())
         self.ax.set_ylim(0,100)
+        self.ax.set_xlim(0,self.maxlen)
 
         self.canvas = FigureCanvasTkAgg(fig, master=self.container)
         self.canvas.draw()
