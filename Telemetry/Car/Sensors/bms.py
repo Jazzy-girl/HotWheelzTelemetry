@@ -15,7 +15,7 @@ class BMS(SensorBase):
         self.address = address
     
     def update(self):
-        self.i2c.readfrom_into(self.device, self.message)
+        self.i2c.readfrom_into(self.address, self.message)
 
     def update_packet(self, packet: RawPacket) -> RawPacket:
         return packet.update_from_bms(self.message[:24])
