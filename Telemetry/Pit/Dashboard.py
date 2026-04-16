@@ -48,6 +48,10 @@ Graphs...
 For the non-speed over time graphs:
     store the last # entries. Use a ring buffer (?) or a deque
 """
+MAP_DIMENSIONS = (500,500)
+
+
+
 class Dashboard:
     root = tk.Tk()
     root.title("Dashboard")
@@ -79,7 +83,7 @@ class Dashboard:
 
         # graph frame
         self.graph_frame = tk.Frame(self.graph_map_frame, bg="white", borderwidth=7, relief=tk.SUNKEN)
-        self.graph_frame.pack(side=tk.LEFT, expand=True, fill=tk.BOTH)
+        self.graph_frame.pack(side=tk.LEFT, expand=False, fill=tk.BOTH)
 
         self.graph_label = tk.Label(self.graph_frame, text="GRAPH", bg="white", font=("Comic Sans MS", 16))
         self.graph_label.pack()
@@ -94,7 +98,7 @@ class Dashboard:
         # map frame
         self.map_frame = self._makeFrame(self.graph_map_frame, "white", tk.RIGHT)
         img = Image.open(self.MAP_FILE)
-        img_data = img.resize((250, 250)) # frame dimensions
+        img_data = img.resize(MAP_DIMENSIONS) # frame dimensions
         self.map_img = ImageTk.PhotoImage(img_data)
 
         self.map_label = tk.Label(self.map_frame, image=self.map_img)

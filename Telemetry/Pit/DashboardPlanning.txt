@@ -1,0 +1,24 @@
+States:
+1. Startup:
+    Enter filename to save:
+        Success: -> (2. Fields)
+        Fail: "Invalid file. Try again" -> (1. Startup)
+2. Fields:
+    Shows 15 Fields
+3. Map
+    Can select area of map to get Speed / Time
+4. Faults
+    Shows any Faults along with start time
+
+for 2., 3., and 4. :
+    Fields -> (2. Fields)
+    Map -> (3. Map)
+    Faults -> (4. Faults)
+    Fault occurs -> (A. Fault popup)
+    Can select graph options except for Map graph
+    Shows Connectivity
+    Connectivity fails -> (B. Connectivity failed popup)
+
+Popups:
+A. Fault popup
+B. Connectivity failed popup
