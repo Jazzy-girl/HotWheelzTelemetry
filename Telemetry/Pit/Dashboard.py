@@ -3,12 +3,48 @@ from Telemetry.Pit.Graph import Graph
 from Telemetry.packet import ParsedPacket, FaultSet
 
 import tkinter as tk
+from tkinter import font
 #import matplotlib.pyplot as plt
 #from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import random
 import time
 from random import randint
 from PIL import Image, ImageTk
+
+"""
+Dashboard
+Authors:
+Ryanne Wilson
+Gem Martinage
+
+
+Layout (Frames):
+
+root
+    left_frame: LEFT
+        buttons_frame: TOP
+            field_button: LEFT
+            map_button: LEFT
+            fault_button: LEFT
+        data_frame: BOTTOM
+            switch / one at a time [
+                fields_frame:
+                    grid?
+                map_frame:
+                    map image
+                faults_frame:
+                    grid like fields but a little different
+            ]
+    right_frame: RIGHT
+        connection_frame: TOP
+        select_graph_frame: TOP
+            cockpit_select: LEFT
+            POV_select: LEFT
+            current_select: LEFT
+            highest_temp_select: LEFT
+        graph_frame: BOTTOM
+
+"""
 
 
 
@@ -51,7 +87,6 @@ For the non-speed over time graphs:
 MAP_DIMENSIONS = (500,500)
 
 
-
 class Dashboard:
     root = tk.Tk()
     root.title("Dashboard")
@@ -60,17 +95,42 @@ class Dashboard:
     root.state('zoomed')
     MAX_ELEMENTS = 30
     MAP_FILE = "Telemetry/Pit/trackMap.png"
+    LARGE_FONT = font.Font(family='Georgia',size=24,weight='bold')
+    SMALL_FONT = font.Font(family='Georgia',size=12)
 
-    def _makeFrame(self, parent, bg, side):
-        frame = tk.Frame(parent, bg=bg)
-        frame.pack(side=side, expand=True, fill=tk.BOTH)
+
+    def _makeFrame(self, parent, side, bg=background, pack=True, borderwidth=7, relief=tk.SUNKEN):
+        """
+        Makes a frame. Will pack it to its parent if pack==True
+        """
+        frame = tk.Frame(parent, bg=bg, borderwidth=borderwidth, relief=relief) # pyright: ignore[reportArgumentType]
+        if(pack):
+            frame.pack(side=side, expand=True, fill=tk.BOTH)
         return frame
+
+    def _makeLabel(self, parent: tk.Frame, text: str, side: str, font=LARGE_FONT, pady=20):
+        label = tk.Label(parent, text=text, font=font)
+        label.pack(side=side, pady=pady) # pyright: ignore[reportArgumentType]
+        return label
     
     def __init__(self) -> None:
         self.main_panel = tk.Frame(self.root, bg=self.background)
         self.main_panel.pack(side=tk.RIGHT, expand=True, fill=tk.BOTH)
 
-        self.graph_map_frame = self._makeFrame(self.main_panel, self.background, tk.TOP)
+        # holds all frames on the left side (ie everything except graph and connectivity)
+        self.left_frame = self._makeFrame(self.root, tk.LEFT)
+
+        # holds all the data options: Fields, Map, Faults
+        self.data_frame = self._makeFrame(self.left_frame, tk.BOTTOM)
+
+        # holds all the data button selectors: Fields, Map, Faults
+        self.select_frame = self._makeFrame(self.left_frame, tk.TOP)
+        self.fields_label = self._makeLabel(self.select_frame, "Fields", tk.LEFT)
+        self.map_label = self._makeLabel(self.select_frame, "Map", tk.LEFT)
+        self.faults_label = self._makeLabel(self.select_frame, "Faults", tk.LEFT)
+
+
+
 
         # Field Frame
         self.field_frame = tk.Frame(self.main_panel, bg=self.background, width = 300)
@@ -78,12 +138,11 @@ class Dashboard:
         self.field_frame.pack_propagate(False)
 
         # make field labels
-        self.field_label = self._makeLabel(self.field_frame, "Fields").grid
-        self.field_value = self._makeLabel(self.field_frame, "Values")
+        # self.field_label = self._makeLabel(self.field_frame, "Fields").grid
+        # self.field_value = self._makeLabel(self.field_frame, "Values")
 
         # graph frame
-        self.graph_frame = tk.Frame(self.graph_map_frame, bg="white", borderwidth=7, relief=tk.SUNKEN)
-        self.graph_frame.pack(side=tk.LEFT, expand=False, fill=tk.BOTH)
+        self.graph_frame = self._makeFrame(self.root, tk.RIGHT, "white")
 
         self.graph_label = tk.Label(self.graph_frame, text="GRAPH", bg="white", font=("Comic Sans MS", 16))
         self.graph_label.pack()
@@ -96,7 +155,7 @@ class Dashboard:
         self.graph = Graph(self.graph_data, self.graph_frame, self.root, self.MAX_ELEMENTS)
 
         # map frame
-        self.map_frame = self._makeFrame(self.graph_map_frame, "white", tk.RIGHT)
+        self.map_frame = self._makeFrame(self.root, side=tk.RIGHT, bg="white", pack=False)
         img = Image.open(self.MAP_FILE)
         img_data = img.resize(MAP_DIMENSIONS) # frame dimensions
         self.map_img = ImageTk.PhotoImage(img_data)
@@ -123,9 +182,9 @@ class Dashboard:
         self.root.after(500, self._randGenParsed)
     
     
-    def _makeLabel(self, parent, text):
-        label = tk.Label(parent, text=text, bg="white", font=("Comic Sans MS", 16))
-        return label
+    # def _makeLabel(self, parent, text):
+    #     label = tk.Label(parent, text=text, bg="white", font=("Comic Sans MS", 16))
+    #     return label
 
     def _box(self, parent, title_text, width=150, height = 120):
         """
