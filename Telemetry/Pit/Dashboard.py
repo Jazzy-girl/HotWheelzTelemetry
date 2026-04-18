@@ -29,7 +29,12 @@ root
         data_frame: BOTTOM
             switch / one at a time [
                 fields_frame:
-                    grid?
+                    canvas:
+                        scrollbar
+                        grid:
+                            Parameter / Value / Unit
+                            Speed     / xx    / mph
+                            Pack Open Volt / xx  / yy
                 map_frame:
                     map image
                 faults_frame:
@@ -45,8 +50,6 @@ root
         graph_frame: BOTTOM
 
 """
-
-
 
 from collections import deque
 
@@ -99,13 +102,13 @@ class Dashboard:
     SMALL_FONT = font.Font(family='Georgia',size=12)
 
 
-    def _makeFrame(self, parent, side, bg=background, pack=True, borderwidth=7, relief=tk.SUNKEN):
+    def _makeFrame(self, parent, side, bg=background, pack=True, borderwidth=7, relief=tk.SUNKEN, expand=True, fill=tk.BOTH):
         """
         Makes a frame. Will pack it to its parent if pack==True
         """
         frame = tk.Frame(parent, bg=bg, borderwidth=borderwidth, relief=relief) # pyright: ignore[reportArgumentType]
         if(pack):
-            frame.pack(side=side, expand=True, fill=tk.BOTH)
+            frame.pack(side=side, expand=expand, fill=fill) # pyright: ignore[reportArgumentType]
         return frame
 
     def _makeLabel(self, parent: tk.Frame, text: str, side: str, font=LARGE_FONT, pady=20):
@@ -114,35 +117,54 @@ class Dashboard:
         return label
     
     def __init__(self) -> None:
-        self.main_panel = tk.Frame(self.root, bg=self.background)
-        self.main_panel.pack(side=tk.RIGHT, expand=True, fill=tk.BOTH)
 
+        """
+        Left Side
+        """
         # holds all frames on the left side (ie everything except graph and connectivity)
         self.left_frame = self._makeFrame(self.root, tk.LEFT)
 
-        # holds all the data options: Fields, Map, Faults
-        self.data_frame = self._makeFrame(self.left_frame, tk.BOTTOM)
+
 
         # holds all the data button selectors: Fields, Map, Faults
-        self.select_frame = self._makeFrame(self.left_frame, tk.TOP)
+        self.select_frame = self._makeFrame(self.left_frame, tk.TOP, expand=False)
         self.fields_label = self._makeLabel(self.select_frame, "Fields", tk.LEFT)
         self.map_label = self._makeLabel(self.select_frame, "Map", tk.LEFT)
         self.faults_label = self._makeLabel(self.select_frame, "Faults", tk.LEFT)
 
-
-
+        # holds all the data options: Fields, Map, Faults
+        self.data_frame = self._makeFrame(self.left_frame, tk.BOTTOM)
 
         # Field Frame
-        self.field_frame = tk.Frame(self.main_panel, bg=self.background, width = 300)
-        self.field_frame.pack(side=tk.BOTTOM, fill=tk.BOTH, expand=True)
-        self.field_frame.pack_propagate(False)
+        self.fields_frame = self._makeFrame(parent=self.data_frame,side=tk.BOTTOM)
+        self.canvas_fields_frame = tk.Canvas(self.fields_frame)
+        self.canvas_fields_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+
+        self.scrollbar = tk.Scrollbar(self.fields_frame, orient=tk.VERTICAL,
+                                      command=self.canvas_fields_frame.yview)
+        self.scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+
+        self.canvas_fields_frame.configure(yscrollcommand=self.scrollbar.set)
+        
+        self.fields_grid = tk.Frame(self.canvas_fields_frame)
+        self.canvas_fields_frame.create_window((0,0), window=self.fields_grid, anchor="nw")
+        self.fields_grid.bind("<Configure>", lambda e:
+                              self.canvas_fields_frame.
+                              configure(scrollregion=self.canvas_fields_frame.bbox("all")))
 
         # make field labels
         # self.field_label = self._makeLabel(self.field_frame, "Fields").grid
         # self.field_value = self._makeLabel(self.field_frame, "Values")
 
+        """
+        Right Side
+        """
+
+        # holds all frames on right side
+        self.right_frame = self._makeFrame(self.root, side=tk.RIGHT)
+
         # graph frame
-        self.graph_frame = self._makeFrame(self.root, tk.RIGHT, "white")
+        self.graph_frame = self._makeFrame(self.right_frame, tk.BOTTOM, "white")
 
         self.graph_label = tk.Label(self.graph_frame, text="GRAPH", bg="white", font=("Comic Sans MS", 16))
         self.graph_label.pack()
@@ -154,15 +176,15 @@ class Dashboard:
         self.graph_data = GraphDataCockpit(self.parsedPackets, self.MAX_ELEMENTS)
         self.graph = Graph(self.graph_data, self.graph_frame, self.root, self.MAX_ELEMENTS)
 
-        # map frame
-        self.map_frame = self._makeFrame(self.root, side=tk.RIGHT, bg="white", pack=False)
-        img = Image.open(self.MAP_FILE)
-        img_data = img.resize(MAP_DIMENSIONS) # frame dimensions
-        self.map_img = ImageTk.PhotoImage(img_data)
+        # # map frame
+        # self.map_frame = self._makeFrame(self.root, side=tk.RIGHT, bg="white", pack=False)
+        # img = Image.open(self.MAP_FILE)
+        # img_data = img.resize(MAP_DIMENSIONS) # frame dimensions
+        # self.map_img = ImageTk.PhotoImage(img_data)
 
-        self.map_label = tk.Label(self.map_frame, image=self.map_img)
+        # self.map_label = tk.Label(self.map_frame, image=self.map_img)
 
-        self.map_label.pack()
+        # self.map_label.pack()
         
     
     def start(self):
