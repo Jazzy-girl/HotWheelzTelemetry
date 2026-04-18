@@ -53,22 +53,23 @@ root
 
 from collections import deque
 
+#TODO: Re: Units, Do we need "0.1 V" or did Data Collection already convert it into regular 1 V, etc?
 FIELDS = [
-    "Speed",
-    "Pack Open Voltage",
-    "Pack Summed Voltage",
-    "Pack SOC",
-    "Current ADC1",
-    "High Temperature",
-    "Low Temperature",
-    "High Thermistor ID",
-    "Low Thermistor ID",
-    "Fan Speed",
-    "Highest Cell",
-    "Lowest Cell",
-    "High Cell Voltage ID",
-    "Low Cell Voltage ID",
-    "12v Supply"
+    ["Speed", "Mph"],
+    ["Pack Open Voltage", "0.1 V"],
+    ["Pack Summed Voltage","0.1 V"],
+    ["Pack SOC","0.5 %"],
+    ["Current ADC1","???"],
+    ["High Temperature","C"],
+    ["Low Temperature","C"],
+    ["High Thermistor ID","N/A"],
+    ["Low Thermistor ID","N/A"],
+    ["Fan Speed"," 0 - 6"],
+    ["Highest Cell","0.0001 V"],
+    ["Lowest Cell","0.0001 V"],
+    ["High Cell Voltage ID","N/A"],
+    ["Low Cell Voltage ID","N/A"],
+    ["12v Supply", "0.1 V"]
 ]
 """
 All 15 fields that must be displayed.
@@ -90,6 +91,12 @@ For the non-speed over time graphs:
 MAP_DIMENSIONS = (500,500)
 
 
+# SELECT CONSTANTS
+SELECT_FIELDS = 0
+SELECT_MAP = 1
+SELECT_FAULTS = 2
+
+
 class Dashboard:
     root = tk.Tk()
     root.title("Dashboard")
@@ -101,6 +108,10 @@ class Dashboard:
     LARGE_FONT = font.Font(family='Georgia',size=24,weight='bold')
     SMALL_FONT = font.Font(family='Georgia',size=12)
 
+    buttons_to_frames : dict[tk.Button, tk.Frame]
+
+    buttons_to_frames = dict()
+
 
     def _makeFrame(self, parent, side, bg=background, pack=True, borderwidth=7, relief=tk.SUNKEN, expand=True, fill=tk.BOTH):
         """
@@ -111,36 +122,43 @@ class Dashboard:
             frame.pack(side=side, expand=expand, fill=fill) # pyright: ignore[reportArgumentType]
         return frame
 
-    def _makeLabel(self, parent: tk.Frame, text: str, side: str | None, font=LARGE_FONT, pady=20, pack=True, grid=False, row = 0, col = 0, colspan=1):
+    def _makeLabel(self, parent: tk.Frame, text: str, side: str | None, font=LARGE_FONT, pady=20, padx=1, pack=True, grid=False, row = 0, col = 0, colspan=1):
         label = tk.Label(parent, text=text, font=font)
         if(pack):
             label.pack(side=side, pady=pady) # pyright: ignore[reportArgumentType]
         if(grid):
-            label.grid(row=row, column=col, columnspan=colspan, sticky=tk.EW)
+            label.grid(row=row, column=col, columnspan=colspan, sticky=tk.NSEW, pady=pady, padx=padx)
         return label
 
     def _makeButton(self, parent: tk.Frame, text: str, side=tk.LEFT, pack=True, fill=tk.BOTH, expand=True):
-        button = tk.Button(master=parent,text=text)
+        button = tk.Button(master=parent,text=text, height=2)
+        button.configure(command=lambda: self._switchViews(button=button))
         button.pack(side=side,fill=fill,expand=expand) # pyright: ignore[reportArgumentType]
         return button
     
-    def _initLeftSide(self):
+    def _switchViews(self, button: tk.Button):
         """
-        Left Side
+        Switches which frame is being displayed in data_frame according to which button is pressed
         """
-        # holds all frames on the left side (ie everything except graph and connectivity)
-        self.left_frame = self._makeFrame(self.root, tk.LEFT)
 
-        # holds all the data button selectors: Fields, Map, Faults
-        self.select_frame = self._makeFrame(self.left_frame, tk.TOP, expand=False, fill=tk.BOTH)
-        self.fields_button = self._makeButton(self.select_frame, "Fields")
+        frame_to_pack = self.buttons_to_frames[button]
 
-        self.map_button = self._makeButton(self.select_frame, "Map")
-        self.fault_button = self._makeButton(self.select_frame, "Faults")
-
-        # holds all the data options: Fields, Map, Faults
-        self.data_frame = self._makeFrame(self.left_frame, tk.BOTTOM)
-
+        if frame_to_pack.winfo_ismapped(): # the frame already is selected
+            return
+        else:                              # the frame is not already selected
+            # forget other frames
+            # pack the correct frame
+            # make the current button gray
+            # make the other buttons white
+            for iterate_button, iterate_frame in self.buttons_to_frames.items():
+                if iterate_frame != frame_to_pack:
+                    iterate_frame.forget()
+                    iterate_button.configure(bg="white")
+                else:
+                    iterate_frame.pack(side=tk.BOTTOM, expand=True, fill=tk.BOTH)
+                    iterate_button.configure(bg="grey")
+    
+    def _initFieldsFrame(self):
         # Field Frame
         self.fields_frame = self._makeFrame(parent=self.data_frame,side=tk.BOTTOM, expand=True)
         self.canvas_fields_frame = tk.Canvas(self.fields_frame)
@@ -152,7 +170,7 @@ class Dashboard:
 
         self.canvas_fields_frame.configure(yscrollcommand=self.scrollbar.set)
         
-        self.fields_grid = tk.Frame(self.canvas_fields_frame)
+        self.fields_grid = self._makeFrame(self.canvas_fields_frame, side=None, bg="grey", pack=False, borderwidth=0)
         self.canvas_window = self.canvas_fields_frame.create_window((0,0), window=self.fields_grid, anchor="nw" )
 
         self.fields_grid.bind("<Configure>", lambda e:
@@ -160,15 +178,72 @@ class Dashboard:
                               configure(scrollregion=self.canvas_fields_frame.bbox("all")))
         
         self.canvas_fields_frame.bind("<Configure>", lambda e:
-                                        self.canvas_fields_frame.itemconfig(self.canvas_window, width=e.width))
+                                        self.canvas_fields_frame.itemconfig(self.canvas_window, width=e.width, height=e.height))
         
-        for i in range(0,3):
+        # 4 columns
+        for i in range(0,4):
             self.fields_grid.columnconfigure(i, weight=1)
-        self.fields_grid.rowconfigure(0, weight=1)
+        for i in range(0,len(FIELDS)+1):
+            self.fields_grid.rowconfigure(i, weight=1)
 
-        param_label = self._makeLabel(self.fields_grid, side=None, font=self.SMALL_FONT, text="Parameter", pack=False, grid=True)
+        # param label spans 2 cols; the other labels each span 1
+        param_label = self._makeLabel(
+            self.fields_grid, side=None, pady=1, font=self.SMALL_FONT, text="Parameter", pack=False, grid=True, colspan=2)
         val_label = self._makeLabel(
-            self.fields_grid, side=None, font=self.SMALL_FONT, text="Value", col=1, pack=False, grid=True)
+            self.fields_grid, side=None, pady=1,font=self.SMALL_FONT, text="Value", col=2, pack=False, grid=True)
+        unit_label = self._makeLabel(
+            self.fields_grid, side=None, pady=1,font=self.SMALL_FONT, text="Unit", col=3, pack=False, grid=True)
+
+        # make actual fields: param, val, unit
+        for i in range(0,len(FIELDS)):
+            param_field = self._makeLabel(
+                self.fields_grid, side=None, text=FIELDS[i][0], font=self.SMALL_FONT,
+                row=i+1, col=0, colspan=2, pady=1, pack=False, grid=True
+            )
+
+            # connect to update-fields func, likely via a dict
+            val_field = self._makeLabel(
+                self.fields_grid, side=None, text="1234", font=self.SMALL_FONT,
+                row=i+1, col=2, pady=1, pack=False, grid=True
+            )
+            unit_field = self._makeLabel(
+                self.fields_grid, side=None, text=FIELDS[i][1], font=self.SMALL_FONT,
+                row=i+1, col=3, pady=1, pack=False, grid=True
+            )
+    
+    def _initMapFrame(self):
+        self.map_frame = self._makeFrame(parent=self.data_frame, side=tk.BOTTOM, expand=True, pack=False)
+    
+    def _initFaultFrame(self):
+        self.faults_frame = self._makeFrame(parent=self.data_frame, side=tk.BOTTOM, expand=True, pack=False)
+
+    def _initLeftSide(self):
+        """
+        Left Side
+        """
+        # holds all frames on the left side (ie everything except graph and connectivity)
+        self.left_frame = self._makeFrame(self.root, tk.LEFT)
+
+        # holds all the data button selectors: Fields, Map, Faults
+        self.select_frame = self._makeFrame(self.left_frame, tk.TOP, expand=False, fill=tk.BOTH)
+
+
+        self.fields_button = self._makeButton(self.select_frame, "Fields")
+        self.map_button = self._makeButton(self.select_frame, "Map")
+        self.fault_button = self._makeButton(self.select_frame, "Faults")
+
+
+        # holds all the data options: Fields, Map, Faults
+        self.data_frame = self._makeFrame(self.left_frame, tk.BOTTOM)
+
+        self._initFieldsFrame()
+        self._initMapFrame()
+        self._initFaultFrame()
+
+        self.buttons_to_frames[self.fields_button] = self.fields_frame
+        self.buttons_to_frames[self.map_button] = self.map_frame
+        self.buttons_to_frames[self.fault_button] = self.faults_frame
+
         
 
     def _initRightSide(self):
