@@ -111,32 +111,38 @@ class Dashboard:
             frame.pack(side=side, expand=expand, fill=fill) # pyright: ignore[reportArgumentType]
         return frame
 
-    def _makeLabel(self, parent: tk.Frame, text: str, side: str, font=LARGE_FONT, pady=20):
+    def _makeLabel(self, parent: tk.Frame, text: str, side: str | None, font=LARGE_FONT, pady=20, pack=True, grid=False, row = 0, col = 0, colspan=1):
         label = tk.Label(parent, text=text, font=font)
-        label.pack(side=side, pady=pady) # pyright: ignore[reportArgumentType]
+        if(pack):
+            label.pack(side=side, pady=pady) # pyright: ignore[reportArgumentType]
+        if(grid):
+            label.grid(row=row, column=col, columnspan=colspan, sticky=tk.EW)
         return label
-    
-    def __init__(self) -> None:
 
+    def _makeButton(self, parent: tk.Frame, text: str, side=tk.LEFT, pack=True, fill=tk.BOTH, expand=True):
+        button = tk.Button(master=parent,text=text)
+        button.pack(side=side,fill=fill,expand=expand) # pyright: ignore[reportArgumentType]
+        return button
+    
+    def _initLeftSide(self):
         """
         Left Side
         """
         # holds all frames on the left side (ie everything except graph and connectivity)
         self.left_frame = self._makeFrame(self.root, tk.LEFT)
 
-
-
         # holds all the data button selectors: Fields, Map, Faults
-        self.select_frame = self._makeFrame(self.left_frame, tk.TOP, expand=False)
-        self.fields_label = self._makeLabel(self.select_frame, "Fields", tk.LEFT)
-        self.map_label = self._makeLabel(self.select_frame, "Map", tk.LEFT)
-        self.faults_label = self._makeLabel(self.select_frame, "Faults", tk.LEFT)
+        self.select_frame = self._makeFrame(self.left_frame, tk.TOP, expand=False, fill=tk.BOTH)
+        self.fields_button = self._makeButton(self.select_frame, "Fields")
+
+        self.map_button = self._makeButton(self.select_frame, "Map")
+        self.fault_button = self._makeButton(self.select_frame, "Faults")
 
         # holds all the data options: Fields, Map, Faults
         self.data_frame = self._makeFrame(self.left_frame, tk.BOTTOM)
 
         # Field Frame
-        self.fields_frame = self._makeFrame(parent=self.data_frame,side=tk.BOTTOM)
+        self.fields_frame = self._makeFrame(parent=self.data_frame,side=tk.BOTTOM, expand=True)
         self.canvas_fields_frame = tk.Canvas(self.fields_frame)
         self.canvas_fields_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
@@ -147,15 +153,25 @@ class Dashboard:
         self.canvas_fields_frame.configure(yscrollcommand=self.scrollbar.set)
         
         self.fields_grid = tk.Frame(self.canvas_fields_frame)
-        self.canvas_fields_frame.create_window((0,0), window=self.fields_grid, anchor="nw")
+        self.canvas_window = self.canvas_fields_frame.create_window((0,0), window=self.fields_grid, anchor="nw" )
+
         self.fields_grid.bind("<Configure>", lambda e:
                               self.canvas_fields_frame.
                               configure(scrollregion=self.canvas_fields_frame.bbox("all")))
+        
+        self.canvas_fields_frame.bind("<Configure>", lambda e:
+                                        self.canvas_fields_frame.itemconfig(self.canvas_window, width=e.width))
+        
+        for i in range(0,3):
+            self.fields_grid.columnconfigure(i, weight=1)
+        self.fields_grid.rowconfigure(0, weight=1)
 
-        # make field labels
-        # self.field_label = self._makeLabel(self.field_frame, "Fields").grid
-        # self.field_value = self._makeLabel(self.field_frame, "Values")
+        param_label = self._makeLabel(self.fields_grid, side=None, font=self.SMALL_FONT, text="Parameter", pack=False, grid=True)
+        val_label = self._makeLabel(
+            self.fields_grid, side=None, font=self.SMALL_FONT, text="Value", col=1, pack=False, grid=True)
+        
 
+    def _initRightSide(self):
         """
         Right Side
         """
@@ -185,6 +201,12 @@ class Dashboard:
         # self.map_label = tk.Label(self.map_frame, image=self.map_img)
 
         # self.map_label.pack()
+    def __init__(self) -> None:
+        self._initLeftSide()
+        self._initRightSide()
+        
+
+        
         
     
     def start(self):
