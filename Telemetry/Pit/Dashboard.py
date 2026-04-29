@@ -213,6 +213,15 @@ class Dashboard:
     
     def _initMapFrame(self):
         self.map_frame = self._makeFrame(parent=self.data_frame, side=tk.BOTTOM, expand=True, pack=False)
+
+        # map frame
+        img = Image.open(self.MAP_FILE)
+        img_data = img.resize(MAP_DIMENSIONS) # frame dimensions
+        self.map_img = ImageTk.PhotoImage(img_data)
+
+        self.map_label = tk.Label(self.map_frame, image=self.map_img)
+
+        self.map_label.pack()
     
     def _initFaultFrame(self):
         self.faults_frame = self._makeFrame(parent=self.data_frame, side=tk.BOTTOM, expand=True, pack=False)
@@ -227,14 +236,17 @@ class Dashboard:
         # holds all the data button selectors: Fields, Map, Faults
         self.select_frame = self._makeFrame(self.left_frame, tk.TOP, expand=False, fill=tk.BOTH)
 
-
         self.fields_button = self._makeButton(self.select_frame, "Fields")
+        self.fields_button.configure(bg="grey")
         self.map_button = self._makeButton(self.select_frame, "Map")
         self.fault_button = self._makeButton(self.select_frame, "Faults")
 
 
         # holds all the data options: Fields, Map, Faults
         self.data_frame = self._makeFrame(self.left_frame, tk.BOTTOM)
+        # self.data_frame.config(width=200)
+        # self.data_frame.configure(min)
+        self.data_frame.pack_propagate(False)
 
         self._initFieldsFrame()
         self._initMapFrame()
@@ -267,15 +279,6 @@ class Dashboard:
         self.graph_data = GraphDataCockpit(self.parsedPackets, self.MAX_ELEMENTS)
         self.graph = Graph(self.graph_data, self.graph_frame, self.root, self.MAX_ELEMENTS)
 
-        # # map frame
-        # self.map_frame = self._makeFrame(self.root, side=tk.RIGHT, bg="white", pack=False)
-        # img = Image.open(self.MAP_FILE)
-        # img_data = img.resize(MAP_DIMENSIONS) # frame dimensions
-        # self.map_img = ImageTk.PhotoImage(img_data)
-
-        # self.map_label = tk.Label(self.map_frame, image=self.map_img)
-
-        # self.map_label.pack()
     def __init__(self) -> None:
         self._initLeftSide()
         self._initRightSide()
