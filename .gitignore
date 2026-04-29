@@ -173,3 +173,5 @@ cython_debug/
 # Workspace
 .idea/
 Telemetry.code-workspace
+
+pulse_count.txt
