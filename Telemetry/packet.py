@@ -4,7 +4,10 @@ import math
 import time
 from typing import NamedTuple, Generator
 
-PACKET_FORMAT = "<xxHI dd H Hf Ih5H8B"
+PACKET_ORDER = "little" # little | big
+PACKET_ORDER_STRUCT = '<' if PACKET_ORDER == "little" else '>' if PACKET_ORDER == "big" else ''
+
+PACKET_FORMAT = PACKET_ORDER_STRUCT + "xxHI dd H Hf Ih5H8B"
 
 PULSES_PER_ROTATION = 48
 
@@ -31,7 +34,7 @@ def thermistor_temp(reading: int) -> tuple[float, float, float]:
     return voltage * 3.3, resistance, (1.0 / steinhart) - 273.15
 
 def checksum_of_data(data: bytes | bytearray) -> int:
-    return functools.reduce(int.__xor__, struct.unpack("<4x26H", data))
+    return functools.reduce(int.__xor__, struct.unpack(PACKET_ORDER_STRUCT + "4x26H", data))
 
 def write_checksum(data: bytearray):
     cs = checksum_of_data(data)
@@ -146,7 +149,7 @@ class RawPacket(NamedTuple):
         """
         Update the packet with BMS data
         """
-        faults, curr, open_volt, summed_volt, supply_12v, high_cell_volt, low_cell_volt, high_cell_id, low_cell_id, high_temp, low_temp, high_therm_id, low_therm_id, soc, fan_speed = struct.unpack("<Ih5H8B", data)
+        faults, curr, open_volt, summed_volt, supply_12v, high_cell_volt, low_cell_volt, high_cell_id, low_cell_id, high_temp, low_temp, high_therm_id, low_therm_id, soc, fan_speed = struct.unpack(PACKET_ORDER_STRUCT + "Ih5H8B", data)
         return self._replace(
             faults=faults,
             curr=curr,
