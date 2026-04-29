@@ -4,7 +4,7 @@ import base64
 import board
 import busio
 import digitalio
-import adafruid_rfm9x
+import adafruit_rfm9x
 
 from Telemetry.Car.GUI import CarSideGUI
 from Telemetry.Car.Sensors.all import *
