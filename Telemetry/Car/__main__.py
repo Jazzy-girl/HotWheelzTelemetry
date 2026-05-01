@@ -10,11 +10,12 @@ from Telemetry.Car.GUI import CarSideGUI
 from Telemetry.Car.Sensors.all import *
 from Telemetry.packet import RawPacket, ParsedPacket
 
+i2c = board.I2C()
 spi0 = busio.SPI(board.SCK, MOSI=board.MOSI, MISO=board.MISO)
 spi1 = busio.SPI(board.SCK_1, MOSI=board.MOSI_1, MISO=board.MISO_1)
 
 gps = GPS()
-bms = BMS(spi1, board.D25)
+bms = BMS(i2c, 0x52)
 speed = SpeedWorker(board.D12)
 thermistor = CockpitThermistor(spi1, board.D24)
 
