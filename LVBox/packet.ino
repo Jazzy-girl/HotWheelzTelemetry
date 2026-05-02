@@ -1,5 +1,7 @@
 #include "packet.h"
 
+packet_t packet;
+
 /// Swap the byte order in an integer
 void swap_bytes_u16(uint16_t* val) {
     uint8_t temp = (int8_t)(*val);

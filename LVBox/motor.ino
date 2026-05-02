@@ -1,6 +1,6 @@
 #include "motor.h"
 
-#define MOTOR_CONTROLLER_PIN 3
+#define MOTOR_CONTROLLER_PIN 5
 #define MAX_PULSES 1024
 #define PULSE_MASK (MAX_PULSES - 1)
 #define SECOND 1000000

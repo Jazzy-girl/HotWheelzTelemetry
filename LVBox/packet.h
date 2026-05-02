@@ -39,4 +39,6 @@ void swap_packet_bytes(packet_t* packet);
 /// Write the checksum to the packet
 void write_checksum(packet_t* packet);
 
+extern packet_t packet;
+
 #endif // PACKET_H
