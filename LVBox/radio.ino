@@ -22,12 +22,12 @@ void radio_init() {
     digitalWrite(RFM95_RST, HIGH);
     delay(10);
     int fails = 0;
-    while (fails < 100 && !rf.init()) {
+    while (fails < MAX_FAILS && !rf.init()) {
         Serial.println("!Initialization failed");
         delay(10);
         ++fails;
     }
-    while (fails < 100 && !rf.setFrequency(RF95_FREQ)) {
+    while (fails < MAX_FAILS && !rf.setFrequency(RF95_FREQ)) {
         Serial.println("!Freuency failed");
         delay(10);
         ++fails;
