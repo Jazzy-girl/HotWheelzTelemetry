@@ -1,3 +1,6 @@
+#ifndef PACKET_H
+#define PACKET_H
+
 #include <stdint.h>
 
 typedef struct packet {
@@ -35,3 +38,5 @@ void swap_packets_byte(packet_t* packet);
 
 /// Write the checksum to the packet
 void write_checksum(packet_t* packet);
+
+#endif // PACKET_H
