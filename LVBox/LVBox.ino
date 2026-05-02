@@ -4,6 +4,8 @@
 #include "gps.h"
 #include <Wire.h>
 
+#define THERMISTOR_INPUT A0
+
 void setup() {
     Serial.begin(9600);
     Serial1.begin(9600);
@@ -23,6 +25,7 @@ void loop() {
     packet.longitude = gps_longitude;
     packet.latitude = gps_latitude;
     packet.gps_speed = gps_speed;
+    packet.cockpit_temp = analogRead(THERMISTOR_INPUT);
     swap_packet_bytes(&packet);
     write_checksum(&packet);
     radio_send();
