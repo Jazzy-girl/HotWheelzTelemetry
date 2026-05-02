@@ -8,8 +8,8 @@ typedef struct packet {
     uint8_t W;
     uint16_t checksum;
     uint32_t timestamp;
-    double longitude;
-    double latitude;
+    float longitude;
+    float latitude;
     int16_t cockpit_temp;
     uint16_t motor_speed;
     float gps_speed;
