@@ -8,7 +8,6 @@
 
 void setup() {
     Serial.begin(9600);
-    Serial1.begin(9600);
     Wire.begin();
     motor_controller_init();
     radio_init();
