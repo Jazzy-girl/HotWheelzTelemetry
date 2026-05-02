@@ -2,6 +2,8 @@
 #include "motor.h"
 #include <Wire.h>
 
+packet_t packet;
+
 void setup() {
     Serial.begin(9600);
     Serial1.begin(9600);
