@@ -30,15 +30,22 @@ typedef struct packet {
     uint8_t fan_speed;
 } packet_t;
 
+typedef struct padded_packet {
+    packet_t packet;
+    char dummy;
+} padded_packet_t;
+
 /// Swap the byte order in an integer
 void swap_bytes_u16(uint16_t* val);
 
 /// Swap all of the BE ints in the packet to LE
-void swap_packet_bytes(packet_t* packet);
+void swap_packet_bytes();
 
 /// Write the checksum to the packet
-void write_checksum(packet_t* packet);
+void write_checksum();
 
-extern packet_t packet;
+extern padded_packet_t padded;
+
+#define PACKET padded.packet
 
 #endif // PACKET_H

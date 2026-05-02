@@ -1,0 +1,17 @@
+#include "BMS.h"
+#include "packet.h"
+#include <Wire.h>
+
+#define FEATHER_ADDRESS 0x52
+#define I2C_FRAME_LEN 25
+
+/// Initialize the I2C connection
+void bms_init() {
+    Wire.begin();
+}
+/// Read the I2C data into the global packet
+void bms_poll() {
+    Wire.requestFrom(FEATHER_ADDRESS, I2C_FRAME_LEN);
+    while (!Wire.available()) delayMicroseconds(5);
+    Wire.readBytes((uint8_t*)(&PACKET.faults), I2C_FRAME_LEN);
+}

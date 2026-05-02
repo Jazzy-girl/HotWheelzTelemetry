@@ -1,31 +1,32 @@
 #include "packet.h"
 #include "motor.h"
 #include "radio.h"
-#include "gps.h"
-#include <Wire.h>
+#include "GPS.h"
+#include "BMS.h"
 
 #define THERMISTOR_INPUT A0
 
 void setup() {
     Serial.begin(9600);
-    Wire.begin();
     motor_controller_init();
     radio_init();
     gps_init();
-    packet.H = 'H';
-    packet.W = 'W';
+    bms_init();
+    PACKET.H = 'H';
+    PACKET.W = 'W';
 }
 
 void loop() {
     motor_controller_poll();
     gps_poll();
-    packet.timestamp = millis();
-    packet.motor_speed = motor_controller_pulses();
-    packet.longitude = gps_longitude;
-    packet.latitude = gps_latitude;
-    packet.gps_speed = gps_speed;
-    packet.cockpit_temp = analogRead(THERMISTOR_INPUT);
-    swap_packet_bytes(&packet);
-    write_checksum(&packet);
+    bms_poll();
+    PACKET.timestamp = millis();
+    PACKET.motor_speed = motor_controller_pulses();
+    PACKET.longitude = gps_longitude;
+    PACKET.latitude = gps_latitude;
+    PACKET.gps_speed = gps_speed;
+    PACKET.cockpit_temp = analogRead(THERMISTOR_INPUT);
+    swap_packet_bytes();
+    write_checksum();
     radio_send();
 }

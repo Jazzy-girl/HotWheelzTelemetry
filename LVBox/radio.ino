@@ -37,5 +37,5 @@ void radio_init() {
 /// Send the data in the global packet over LoRa
 void radio_send() {
     if (radio_failed) return;
-    rf.send((uint8_t*)(&packet), sizeof(packet_t)); // cast the packet data to bytes and send it
+    rf.send((uint8_t*)(&PACKET), sizeof(packet_t)); // cast the packet data to bytes and send it
 }
