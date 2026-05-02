@@ -8,7 +8,7 @@ void swap_bytes_u16(uint16_t* val) {
 }
 
 /// Swap all of the BE ints in the packet to LE
-void swap_packets_byte(packet_t* packet) {
+void swap_packet_bytes(packet_t* packet) {
     swap_bytes_u16((uint16_t*)(&packet->pack_current));
     swap_bytes_u16(&packet->pack_open_voltage);
     swap_bytes_u16(&packet->pack_summed_voltage);

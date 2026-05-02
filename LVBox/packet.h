@@ -34,7 +34,7 @@ typedef struct packet {
 void swap_bytes_u16(uint16_t* val);
 
 /// Swap all of the BE ints in the packet to LE
-void swap_packets_byte(packet_t* packet);
+void swap_packet_bytes(packet_t* packet);
 
 /// Write the checksum to the packet
 void write_checksum(packet_t* packet);

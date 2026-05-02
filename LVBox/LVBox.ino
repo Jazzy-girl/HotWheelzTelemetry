@@ -9,7 +9,14 @@ void setup() {
     Serial1.begin(9600);
     Wire.begin();
     motor_controller_init();
+    packet.H = 'H';
+    packet.W = 'W';
 }
+
 void loop() {
     motor_controller_poll();
+    packet.timestamp = millis();
+    packet.motor_speed = motor_controller_pulses();
+    swap_packet_bytes(&packet);
+    write_checksum(&packet);
 }
