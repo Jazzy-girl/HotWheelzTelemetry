@@ -1,5 +1,5 @@
 
-#define B64_SIZE (BIN_SIZE * 4 + 2) / 3
+#define B64_SIZE ((BIN_SIZE + 2) / 3) * 4
 
 // the alphabet string for base64
 const char* ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
@@ -21,15 +21,17 @@ void encodeBase64(unsigned char bytes) {
             a = readPtr[0];
             writePtr[0] = ALPHABET[a >> 2];
             writePtr[1] = ALPHABET[(a & 0x03) << 4];
-            writePtr += 2;
+            writePtr[2] = writePtr[3] = '=';
+            writePtr += 4;
             break;
         case 2:
             a = readPtr[0];
             b = readPtr[1];
             writePtr[0] = ALPHABET[a >> 2];
             writePtr[1] = ALPHABET[((a & 0x03) << 4) | (b >> 4)];
-            writePtr[2] = ALPHABET[(b & 0x03) << 4];
-            writePtr += 3;
+            writePtr[2] = ALPHABET[(b & 0x0f) << 2];
+            writePtr[3] = '=';
+            writePtr += 4;
             break;
         default:
             a = readPtr[0];

@@ -2,7 +2,8 @@
 #define USB_H
 #include "packet.h"
 
-extern char base64_buffer[((sizeof(packet_t) + 2) / 3) * 4];
-
-void sendSerial();
+/// Initialize serial buffers
+void serial_init();
+/// Send the packet over serial
+void send_serial();
 #endif

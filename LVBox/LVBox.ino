@@ -9,17 +9,16 @@
 
 void setup()
 {
-    Serial.begin(9600);
     motor_controller_init();
     radio_init();
     gps_init();
     bms_init();
+    serial_init();
     PACKET.H = 'H';
     PACKET.W = 'W';
 }
 
-void loop()
-{
+void loop() {
     motor_controller_poll();
     gps_poll();
     bms_poll();
@@ -32,5 +31,5 @@ void loop()
     swap_packet_bytes();
     write_checksum();
     radio_send();
-    sendSerial();
+    send_serial();
 }
