@@ -3,10 +3,12 @@
 #include "radio.h"
 #include "GPS.h"
 #include "BMS.h"
+#include "USB.h"
 
 #define THERMISTOR_INPUT A0
 
-void setup() {
+void setup()
+{
     Serial.begin(9600);
     motor_controller_init();
     radio_init();
@@ -16,7 +18,8 @@ void setup() {
     PACKET.W = 'W';
 }
 
-void loop() {
+void loop()
+{
     motor_controller_poll();
     gps_poll();
     bms_poll();
@@ -29,4 +32,5 @@ void loop() {
     swap_packet_bytes();
     write_checksum();
     radio_send();
+    sendSerial();
 }
