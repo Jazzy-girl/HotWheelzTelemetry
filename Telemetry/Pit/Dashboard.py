@@ -266,6 +266,15 @@ class Dashboard:
         # holds all frames on right side
         self.right_frame = self._makeFrame(self.root, side=tk.RIGHT)
 
+        # select graph frame
+        self.select_graph_frame = self._makeFrame(self.right_frame, tk.TOP, "white")
+
+        # make buttons
+        self.cockpit_sel = self._makeButton(self.select_graph_frame, "Cockpit Temp", tk.LEFT)
+        self.POV_sel = self._makeButton(self.select_graph_frame, "POV Select", tk.LEFT)
+        self.current_sel = self._makeButton(self.select_graph_frame, "Current", tk.LEFT)
+        self.highest_temp_sel = self._makeButton(self.select_graph_frame, "High Temp", tk.LEFT)
+
         # graph frame
         self.graph_frame = self._makeFrame(self.right_frame, tk.BOTTOM, "white")
 
