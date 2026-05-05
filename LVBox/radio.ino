@@ -5,7 +5,7 @@
 
 #define RFM95_CS   9
 #define RFM95_RST  4
-#define RFM95_INT  3
+#define RFM95_INT  2
 #define RF95_FREQ 915.0
 #define MAX_FAILS 100
 
