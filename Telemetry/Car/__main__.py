@@ -28,6 +28,8 @@ print(file=log_file, sep=",", *(ParsedPacket._fields + ("sent",))) # write all o
 
 gui: CarSideGUI = CarSideGUI()
 
+interface: 
+
 def update_data():
     gps.update()
     bms.update()
@@ -38,6 +40,7 @@ def update_data():
     print(file=log_file, sep=",", *(parsed + (base64.b64encode(data).decode('ascii'),))) # write all of the tuple fields to the file, then the packet itself, encoded as base64
     gui.update_fields(parsed.motor_speed, parsed.bms_soc, parsed.therm_temp, parsed.bms_faults)
     gui.root.after(100, update_data)
+
 
 update_data()
 gui.start()
