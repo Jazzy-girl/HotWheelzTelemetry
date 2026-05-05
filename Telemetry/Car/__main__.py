@@ -11,14 +11,8 @@ from Telemetry.Car.Sensors.all import *
 from Telemetry.packet import RawPacket, ParsedPacket
 import Telemetry.serial_recv as serial
 
-i2c = board.I2C()
-spi0 = busio.SPI(board.SCK, MOSI=board.MOSI, MISO=board.MISO)
-spi1 = busio.SPI(board.SCK_1, MOSI=board.MOSI_1, MISO=board.MISO_1)
 
-# gps = GPS()
-# bms = BMS(i2c, 0x52)
-speed = SpeedWorker(board.D12)
-thermistor = CockpitThermistor(spi1, board.D24)
+spi0 = busio.SPI(board.SCK, MOSI=board.MOSI, MISO=board.MISO)
 
 lora_rst = digitalio.DigitalInOut(board.D5)
 lora_cs = digitalio.DigitalInOut(board.D13)
@@ -31,11 +25,7 @@ gui: CarSideGUI = CarSideGUI()
 usb_filepath = "/dev/ttyACM0"
 interface: serial.BackendInterface = serial.BackendInterface(usb_filepath)
 
-
-
 def update_data():
-    # gps.update()
-    # bms.update()
     message = interface.read()
     if isinstance(message, serial.PacketBackendMessage):
         packet = message.packet
@@ -45,7 +35,6 @@ def update_data():
         print(file=log_file, sep=",", *(parsed + (base64.b64encode(data).decode('ascii'),))) # write all of the tuple fields to the file, then the packet itself, encoded as base64
         gui.update_fields(parsed.motor_speed, parsed.bms_soc, parsed.therm_temp, parsed.bms_faults)
     gui.root.after(100, update_data)
-
 
 update_data()
 gui.start()
