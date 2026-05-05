@@ -5,7 +5,7 @@
 #include "BMS.h"
 #include "USB.h"
 
-#define THERMISTOR_INPUT A0
+#define THERMISTOR_INPUT A1
 
 void setup()
 {
