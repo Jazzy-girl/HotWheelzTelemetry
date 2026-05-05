@@ -44,7 +44,7 @@ def update_data():
         lora.send(data)
         print(file=log_file, sep=",", *(parsed + (base64.b64encode(data).decode('ascii'),))) # write all of the tuple fields to the file, then the packet itself, encoded as base64
         gui.update_fields(parsed.motor_speed, parsed.bms_soc, parsed.therm_temp, parsed.bms_faults)
-        gui.root.after(100, update_data)
+    gui.root.after(100, update_data)
 
 
 update_data()
