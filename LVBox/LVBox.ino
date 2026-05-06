@@ -6,20 +6,26 @@
 #include "USB.h"
 
 #define THERMISTOR_INPUT A1
+#define SEND_INTERVAL 500 // ms
 
-void setup()
-{
+long send_ts;
+
+void setup() {
     motor_controller_init();
     radio_init();
     gps_init();
     bms_init();
     serial_init();
+    send_ts = millis() + SEND_INTERVAL;
     PACKET.H = 'H';
     PACKET.W = 'W';
 }
 
 void loop() {
     motor_controller_poll();
+    long now = millis();
+    if (now < send_ts) return;
+    send_ts = now + SEND_INTERVAL;
     gps_poll();
     bms_poll();
     PACKET.timestamp = millis();

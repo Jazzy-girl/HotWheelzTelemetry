@@ -32,7 +32,7 @@ void send_serial() {
         case 1:
             a = readPtr[0];
             writePtr[0] = ALPHABET[a >> 2];
-            writePtr[1] = ALPHABET[(a & 0x03) << 4];`
+            writePtr[1] = ALPHABET[(a & 0x03) << 4];
             writePtr[2] = writePtr[3] = '=';
             break;
         case 2:
