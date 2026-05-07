@@ -16,6 +16,5 @@ void bms_init() {
 /// Read the I2C data into the global packet
 void bms_poll() {
     Wire.requestFrom(FEATHER_ADDRESS, I2C_FRAME_LEN);
-    while (!Wire.available()) delayMicroseconds(5);
     Wire.readBytes((uint8_t*)(&PACKET.faults), I2C_FRAME_LEN);
 }

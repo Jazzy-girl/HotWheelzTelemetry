@@ -11,6 +11,7 @@
 long send_ts;
 
 void setup() {
+    while (!Serial);
     motor_controller_init();
     radio_init();
     gps_init();
@@ -19,6 +20,7 @@ void setup() {
     send_ts = millis() + SEND_INTERVAL;
     PACKET.H = 'H';
     PACKET.W = 'W';
+    Serial.println("!Initialization complete");
 }
 
 void loop() {
