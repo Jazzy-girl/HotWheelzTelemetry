@@ -28,7 +28,7 @@ void radio_init() {
         ++fails;
     }
     while (fails < MAX_FAILS && !rf.setFrequency(RF95_FREQ)) {
-        Serial.println("!Freuency failed");
+        Serial.println("!Frequency failed");
         delay(10);
         ++fails;
     }
