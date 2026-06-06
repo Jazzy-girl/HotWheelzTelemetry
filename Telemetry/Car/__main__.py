@@ -2,7 +2,7 @@ import time
 import base64
 
 from Telemetry.Car.GUI import CarSideGUI
-from Telemetry.packet import ParsedPacket
+from Telemetry.packet import ParsedPacket, RawPacket, FaultSet
 import Telemetry.serial_recv as serial
 
 log_file = open(time.strftime("logs/data_%Y%m%d_%H%M%S.csv", time.localtime()), "w+")
@@ -13,16 +13,16 @@ usb_filepath = "/dev/ttyACM0"
 interface: serial.BackendInterface = serial.BackendInterface(usb_filepath)
 # debug testing
 
+do_debug = True
+
 def random_packet():
     randPacket = RawPacket(1,1,1,1,1,1,1,1,1,1,FaultSet(0),1,1,1,1,1,1,1,1,1,1,1)
     return randPacket
 
 def update_data():
-    message = interface.read()
-    # if isinstance(message, serial.PacketBackendMessage):
-    if True:
-        # packet = message.packet
-        packet = random_packet()
+    message = serial.PacketBackendMessage.from_packet(random_packet()) if do_debug else interface.read()
+    if isinstance(message, serial.PacketBackendMessage):
+        packet = message.packet
         parsed = packet.parse()
         data = packet.pack_bytes(True)
         print(file=log_file, sep=",", *(parsed + (base64.b64encode(data).decode('ascii'),))) # write all of the tuple fields to the file, then the packet itself, encoded as base64

@@ -17,7 +17,7 @@ S_TO_HR = 3600
 
 PULSE_SPEED_MUL = WHEEL_CIRCUMFERENCE_FT / PULSES_PER_ROTATION * FT_TO_MI * S_TO_HR
 
-PACKET_LEN = 56
+PACKET_LEN = 48
 
 def thermistor_temp(reading: int) -> tuple[float, float, float]:
     LOW_SIDE_RESISTOR = 10000
@@ -266,12 +266,12 @@ class ParsedPacket(NamedTuple):
             gps_lon=self.gps_lon,
             gps_lat=self.gps_lat,
             temp=self.therm_reading,
-            motor_speed=self.motor_speed / PULSE_SPEED_MUL,
+            motor_speed=int(self.motor_speed / PULSE_SPEED_MUL),
             gps_speed=self.gps_speed / KM_TO_MI,
             faults=int(self.bms_faults),
-            curr=int(self.bms_curr * 10),
-            open_volt=int(self.bms_open_volt * 10),
-            summed_volt=int(self.bms_open_volt * 10),
+            curr=int(self.bms_current * 10),
+            open_volt=int(self.bms_open_voltage * 10),
+            summed_volt=int(self.bms_open_voltage * 10),
             supply_12v=int(self.bms_supply_12v * 10),
             high_cell_volt=int(self.bms_high_cell_volt * 10000),
             low_cell_volt=int(self.bms_high_cell_volt * 10000),
