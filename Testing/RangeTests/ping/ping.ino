@@ -1,7 +1,7 @@
 // change this if we wire it differently
-#define RFM95_CS   8
+#define RFM95_CS   9
 #define RFM95_RST  4
-#define RFM95_INT  3
+#define RFM95_INT  2
 
 #include "common.h"
 

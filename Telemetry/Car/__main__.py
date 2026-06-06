@@ -11,11 +11,18 @@ print(file=log_file, sep=",", *(ParsedPacket._fields + ("sent",))) # write all o
 gui: CarSideGUI = CarSideGUI()
 usb_filepath = "/dev/ttyACM0"
 interface: serial.BackendInterface = serial.BackendInterface(usb_filepath)
+# debug testing
+
+def random_packet():
+    randPacket = RawPacket(1,1,1,1,1,1,1,1,1,1,FaultSet(0),1,1,1,1,1,1,1,1,1,1,1)
+    return randPacket
 
 def update_data():
     message = interface.read()
-    if isinstance(message, serial.PacketBackendMessage):
-        packet = message.packet
+    # if isinstance(message, serial.PacketBackendMessage):
+    if True:
+        # packet = message.packet
+        packet = random_packet()
         parsed = packet.parse()
         data = packet.pack_bytes(True)
         print(file=log_file, sep=",", *(parsed + (base64.b64encode(data).decode('ascii'),))) # write all of the tuple fields to the file, then the packet itself, encoded as base64
