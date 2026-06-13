@@ -34,7 +34,7 @@ Output to MPS Safety Circuit (via Nano intermediary):
 CANSAME5x CAN;
 
 // Output pins
-#define BPS_Fault 6 /**  */
+#define BPS_Fault 5 /**  */
 
 #define bitrate 500000 // 500 kbps
 
