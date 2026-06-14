@@ -54,6 +54,10 @@ class Graph:
     
     def setInput(self, input: GraphDataInterface):
         self.input = input
+
+    
+    def getInput(self):
+        return input
     
 
 

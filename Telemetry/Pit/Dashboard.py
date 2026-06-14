@@ -112,6 +112,8 @@ class Dashboard:
 
     buttons_to_frames = dict()
 
+    timeForRandGen = 0
+
 
     def _makeFrame(self, parent, side, bg=background, pack=True, borderwidth=7, relief=tk.SUNKEN, expand=True, fill=tk.BOTH):
         """
@@ -130,11 +132,13 @@ class Dashboard:
             label.grid(row=row, column=col, columnspan=colspan, sticky=tk.NSEW, pady=pady, padx=padx)
         return label
 
-    def _makeButton(self, parent: tk.Frame, text: str, side=tk.LEFT, pack=True, fill=tk.BOTH, expand=True):
+    def _makeButton(self, parent: tk.Frame, text: str, side=tk.LEFT, useconfigure=True, pack=True, fill=tk.BOTH, expand=True):
         button = tk.Button(master=parent,text=text, height=2)
-        button.configure(command=lambda: self._switchViews(button=button))
+        if(useconfigure):
+            button.configure(command=lambda: self._switchViews(button=button))
         button.pack(side=side,fill=fill,expand=expand) # pyright: ignore[reportArgumentType]
         return button
+    
     
     def _switchViews(self, button: tk.Button):
         """
@@ -270,10 +274,16 @@ class Dashboard:
         self.select_graph_frame = self._makeFrame(self.right_frame, tk.TOP, "white")
 
         # make buttons
-        self.cockpit_sel = self._makeButton(self.select_graph_frame, "Cockpit Temp", tk.LEFT)
-        self.POV_sel = self._makeButton(self.select_graph_frame, "POV Select", tk.LEFT)
-        self.current_sel = self._makeButton(self.select_graph_frame, "Current", tk.LEFT)
-        self.highest_temp_sel = self._makeButton(self.select_graph_frame, "High Temp", tk.LEFT)
+        self.cockpit_sel = self._makeButton(self.select_graph_frame, "Cockpit Temp", tk.LEFT, useconfigure=False)
+        
+        self.POV_sel = self._makeButton(self.select_graph_frame, "POV Select", tk.LEFT, useconfigure=False)
+        self.current_sel = self._makeButton(self.select_graph_frame, "Current", tk.LEFT, useconfigure=False)
+        self.highest_temp_sel = self._makeButton(self.select_graph_frame, "High Temp", tk.LEFT, useconfigure=False)
+
+        self.cockpit_sel.configure(command=lambda: self._switchGraphs(GraphDataCockpit(self.parsedPackets, self.MAX_ELEMENTS)))
+        self.POV_sel.configure(command=lambda: self._switchGraphs(GraphDataPOV(self.parsedPackets, self.MAX_ELEMENTS)))
+        self.current_sel.configure(command=lambda: self._switchGraphs(GraphDataCurrent(self.parsedPackets, self.MAX_ELEMENTS)))
+        self.highest_temp_sel.configure(command=lambda: self._switchGraphs(GraphDataHighest(self.parsedPackets, self.MAX_ELEMENTS)))
 
         # graph frame
         self.graph_frame = self._makeFrame(self.right_frame, tk.BOTTOM, "white")
@@ -288,12 +298,17 @@ class Dashboard:
         self.graph_data = GraphDataCockpit(self.parsedPackets, self.MAX_ELEMENTS)
         self.graph = Graph(self.graph_data, self.graph_frame, self.root, self.MAX_ELEMENTS)
 
+    def _switchGraphs(self, input: GraphDataInterface):
+        """
+        Switches which graph is being displayed in the graph_frame according to which button is pressed
+        """
+        # switch!
+        self.graph.setInput(input)
+        self.graph_data = input
+
     def __init__(self) -> None:
         self._initLeftSide()
         self._initRightSide()
-        
-
-        
         
     
     def start(self):
@@ -303,7 +318,8 @@ class Dashboard:
         self.root.mainloop()
     
     def _randGenParsed(self):
-        parsed = ParsedPacket(randint(0,100),randint(0,100),randint(0,100),randint(0,100),randint(0,100),
+        self.timeForRandGen += 1
+        parsed = ParsedPacket(randint(0,100),self.timeForRandGen,randint(0,100),randint(0,100),randint(0,100),
                               randint(0,100),randint(0,100),randint(0,100),randint(0,100),randint(0,100),
                               FaultSet(0),randint(0,100),randint(0,100),randint(0,100),randint(0,100),randint(0,100),
                               randint(0,100),randint(0,100),randint(0,100),randint(0,100),randint(0,100),randint(0,100),
@@ -311,7 +327,7 @@ class Dashboard:
         self.graph_data.addElement(parsed)
         print("rand gen parsed!")
         self.root.after(500, self._randGenParsed)
-    
+
     
     # def _makeLabel(self, parent, text):
     #     label = tk.Label(parent, text=text, bg="white", font=("Comic Sans MS", 16))
