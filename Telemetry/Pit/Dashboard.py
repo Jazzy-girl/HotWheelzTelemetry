@@ -89,6 +89,7 @@ For the non-speed over time graphs:
     store the last # entries. Use a ring buffer (?) or a deque
 """
 MAP_DIMENSIONS = (618,773)#(444,624)#(500,500)
+CAR_DIMENSIONS = (10,10)
 
 
 # SELECT CONSTANTS
@@ -96,6 +97,15 @@ SELECT_FIELDS = 0
 SELECT_MAP = 1
 SELECT_FAULTS = 2
 
+# MAP STUFF
+OFFSET_LONG = 46.417919
+MIN_LONG = 46.40682
+GPS_SCALE = 10**6
+WIDTH_LONG = (OFFSET_LONG - MIN_LONG) * GPS_SCALE
+
+OFFSET_LAT = 94.266378
+MAX_LAT = 94.281506
+HEIGHT_LAT = (OFFSET_LAT - MAX_LAT) * GPS_SCALE
 
 class Dashboard:
     root = tk.Tk()
@@ -105,6 +115,7 @@ class Dashboard:
     root.state('zoomed')
     MAX_ELEMENTS = 30
     MAP_FILE = "Telemetry/Pit/trackMap.png"
+    CAR_FILE = "Telemetry/Pit/car.jpg"
     LARGE_FONT = font.Font(family='Georgia',size=24,weight='bold')
     SMALL_FONT = font.Font(family='Georgia',size=12)
 
@@ -215,6 +226,42 @@ class Dashboard:
                 row=i+1, col=3, pady=1, pack=False, grid=True
             )
     
+    # def _next_image(self):
+    #     """
+    #     """
+    #     self.mapCanvas.move(self.item,10,0)
+
+    def _placeCar(self, long: float, lat: float):
+        width_px = MAP_DIMENSIONS[0]
+        height_px = MAP_DIMENSIONS[1]
+
+        x = -1 * ((long - OFFSET_LONG)*(GPS_SCALE)) // (WIDTH_LONG / width_px)
+        y = -1 * ((lat - OFFSET_LAT)*(GPS_SCALE)) // (HEIGHT_LAT / height_px)
+        print(f"x: {x}\ty: {y}\n")
+        self.car.place(x=x,y=y,anchor=tk.CENTER)
+
+
+
+    def _move(self, event):
+        """
+        """
+        
+        long_min = int(MIN_LONG*GPS_SCALE)
+        long_max = int(OFFSET_LONG*GPS_SCALE)
+        lat_min = int(OFFSET_LAT*GPS_SCALE)
+        lat_max = int(MAX_LAT*GPS_SCALE)
+
+        long: float
+        long = random.randint(long_min,long_max) * (10 ** -6)
+        lat: float
+        lat = random.randint(lat_min,lat_max) * (10 ** -6)
+
+        long = 46.411500 #OFFSET_LONG#
+        lat = 94.272625 #MAX_LAT#
+
+        print(f"LONG: {long}\tLAT: {lat}\n")
+        self._placeCar(long, lat)
+
     def _initMapFrame(self):
         self.map_frame = self._makeFrame(parent=self.data_frame, side=tk.BOTTOM, expand=True, pack=False)
 
@@ -223,9 +270,34 @@ class Dashboard:
         img_data = img.resize(MAP_DIMENSIONS) # frame dimensions
         self.map_img = ImageTk.PhotoImage(img_data)
 
-        self.map_label = tk.Label(self.map_frame, image=self.map_img)
+        self.map_label = tk.Label(self.map_frame, image=self.map_img,padx=0,pady=0)
+        self.map_label.bind("<Button-1>", self._move) # type: ignore
+        width = MAP_DIMENSIONS[0]
+        height = MAP_DIMENSIONS[1]
+        # self.mapCanvas = tk.Canvas(self.map_frame,width=width, height=height)
+        
+    
+        image = Image.open(self.CAR_FILE)
+        image_data = image.resize(CAR_DIMENSIONS)
+        self.car_img = ImageTk.PhotoImage(image_data)
 
-        self.map_label.pack()
+        self.car = tk.Label(self.map_frame, image=self.car_img)
+        
+        x = width/2.0
+        y = height/2.0
+        self.car.place(x=0,y=0,anchor=tk.CENTER)
+        # self.item = self.mapCanvas.create_image(x,y,image=image)
+        # self.mapCanvas.pack(expand=1,fill="both")
+        
+        
+        # self.mapCanvas.bind('<Button-1>', self._next_image)
+
+        
+    
+    
+
+
+        self.map_label.place(x=0,y=0)
     
     def _initFaultFrame(self):
         self.faults_frame = self._makeFrame(parent=self.data_frame, side=tk.BOTTOM, expand=True, pack=False)
@@ -325,7 +397,7 @@ class Dashboard:
                               randint(0,100),randint(0,100),randint(0,100),randint(0,100),randint(0,100),randint(0,100),
                               randint(0,100),randint(0,100),randint(0,100))
         self.graph_data.addElement(parsed)
-        print("rand gen parsed!")
+        # print("rand gen parsed!")
         self.root.after(500, self._randGenParsed)
 
     

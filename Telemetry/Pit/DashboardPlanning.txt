@@ -22,3 +22,23 @@ for 2., 3., and 4. :
 Popups:
 A. Fault popup
 B. Connectivity failed popup
+
+THE MAP:
+map dimensions (so far): 
+    width: 618 px
+    height: 773 px
+
+estimate of map dimensions
+x axis = north south = longitude:
+x = 0 = xx.417919
+x = 618 = xx.406822
+width in longitude difference = .011097
+
+have to map 11097 options onto 618 pixels
+
+y axis = west east = latitude
+y = 0 = xx.266378
+y = 773 = xx.281506
+height in latitude difference = .015128
+
+have to map 15128 options onto 773 pixels

@@ -27,10 +27,10 @@ class Graph:
         self.ax.plot(self.input.getData())
         self.ax.set_ylim(0,100)
         self.ax.set_xlim(0,self.maxlen)
-        print(self.input.getData())
+        # print(self.input.getData())
         self.root.after(500, self.update)
         self.canvas.draw_idle()
-        print("Updated!")
+        # print("Updated!")
         # self.line.set_ydata(list(self.input.getData()))
         # return self.line,
 
