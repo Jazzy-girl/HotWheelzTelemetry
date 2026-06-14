@@ -10,6 +10,8 @@ from matplotlib.animation import FuncAnimation
 from matplotlib.lines import Line2D
 from matplotlib.axes import Axes
 import tkinter as tk
+
+FIGSIZE = (300,800,"px") # width, height, pixels ("px")
 class Graph:
 
     def __init__(self, input: GraphDataInterface, container, root: tk.Tk, max_xlen: int) -> None:
@@ -34,7 +36,7 @@ class Graph:
 
     def start(self):
         """Create the graph"""
-        fig = Figure() #figsize (,) in inches; dpi dots/inch
+        fig = Figure(FIGSIZE) #figsize (,) in inches; dpi dots/inch
         self.ax = fig.add_subplot()
         self.line, = self.ax.plot(self.input.getData())
         self.ax.set_ylim(0,100)

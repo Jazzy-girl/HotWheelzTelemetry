@@ -88,7 +88,7 @@ Graphs...
 For the non-speed over time graphs:
     store the last # entries. Use a ring buffer (?) or a deque
 """
-MAP_DIMENSIONS = (500,500)
+MAP_DIMENSIONS = (618,773)#(444,624)#(500,500)
 
 
 # SELECT CONSTANTS
