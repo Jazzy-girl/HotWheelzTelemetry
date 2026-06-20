@@ -42,3 +42,13 @@ y = 773 = xx.281506
 height in latitude difference = .015128
 
 have to map 15128 options onto 773 pixels
+
+
+6/14:
+coords to pixel mapping is off.
+
+eg:
+46.413089 on Google Earth is at a specific bend at around x = 357 y = 319
+but to get the car there on the map on here, you have to input 46.4115
+
+note that the y coords are about correct. (94.272625)
