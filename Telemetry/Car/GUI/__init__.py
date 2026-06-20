@@ -1,3 +1,6 @@
+import matplotlib
+matplotlib.use('Agg')
+
 """
 Authors: Ryanne Wilson
 
