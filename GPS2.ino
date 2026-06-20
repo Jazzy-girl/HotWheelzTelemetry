@@ -13,13 +13,14 @@ Adafruit_GPS GPS(&GPSSerial);
 bool gps_check_connection(unsigned long timeout_ms = 3000) {
     unsigned long start = millis();
     while (millis() - start < timeout_ms) {
-        while (GPSSerial.available()) {
+        while (GPSSerial.available()) { // Are there any bytes already waiting in the buffer?
             char c = GPS.read();
-            if (c) Serial.print(c);
+            if (c) Serial.print(c); // Print raw NMEA data for debugging
+            // If nothing prints, the GPS isn’t talking.
         }
 
-        if (GPS.newNMEAreceived()) {
-            if (GPS.parse(GPS.lastNMEA())) {
+        if (GPS.newNMEAreceived()) {    // Check if we received a new NMEA sentence
+            if (GPS.parse(GPS.lastNMEA())) {    // Try to parse it, if it’s valid, we have a connection
                 Serial.println("GPS connection OK");
                 return true;
             }
@@ -31,7 +32,7 @@ bool gps_check_connection(unsigned long timeout_ms = 3000) {
 }
 
 void gps_init() {
-    GPSSerial.begin(9600);   // FIXED
+    GPSSerial.begin(9600);
 
     GPS.sendCommand(INIT_COMMAND_1);
     GPS.sendCommand(INIT_COMMAND_2);
