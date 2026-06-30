@@ -59,7 +59,6 @@ void loop() {
     PACKET.latitude = gps_latitude;
     PACKET.gps_speed = gps_speed;
     PACKET.cockpit_temp = analogRead(THERMISTOR_INPUT);
-    swap_packet_bytes();
     write_checksum();
     radio_send();
     send_serial();
