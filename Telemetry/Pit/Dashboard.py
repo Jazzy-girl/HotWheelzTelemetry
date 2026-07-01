@@ -126,6 +126,8 @@ class Dashboard:
     timeForRandGen = 0
 
 
+
+
     def _makeFrame(self, parent, side, bg=background, pack=True, borderwidth=7, relief=tk.SUNKEN, expand=True, fill=tk.BOTH):
         """
         Makes a frame. Will pack it to its parent if pack==True
@@ -399,6 +401,13 @@ class Dashboard:
         self.graph_data.addElement(parsed)
         # print("rand gen parsed!")
         self.root.after(500, self._randGenParsed)
+    
+    
+    def addParsedPacket(self, packet: ParsedPacket):
+        """
+        Public method to add parsed packets
+        """
+        self.graph_data.addElement(packet)
 
     
     # def _makeLabel(self, parent, text):
