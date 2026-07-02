@@ -55,5 +55,7 @@ note that the y coords are about correct. (94.272625)
 
 7/2:
 TASKS
-    1. make fields update with new data
-    2. improve GPS-map accuracy
+    - HIGHPRIORITY: make fields update with new data-- FINISHED
+    - make graph show which graph it's on + buttons greyed out -- FINISHED
+    - improve GPS-map accuracy
+    

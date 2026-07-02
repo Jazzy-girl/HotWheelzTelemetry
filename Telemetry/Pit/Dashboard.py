@@ -91,6 +91,17 @@ Format: [term, units]
 All 15 fields that must be displayed.
 """
 
+
+"""
+GRAPH TITLES
+"""
+COCKPITSEL = "Cockpit Temperature"
+POVSEL = "Pack Open Voltage"
+CURRENTSEL = "ADC Current"
+HITEMPSEL = "Highest Temperature"
+
+
+
 """
 Dashboard
 
@@ -135,12 +146,15 @@ class Dashboard:
     LARGE_FONT = font.Font(family='Georgia',size=24,weight='bold')
     SMALL_FONT = font.Font(family='Georgia',size=12)
 
-    buttons_to_frames : dict[tk.Button, tk.Frame]
+    buttons_to_data_frames : dict[tk.Button, tk.Frame]
 
-    buttons_to_frames = dict()
+    buttons_to_data_frames = dict()
 
     data_to_labels : dict[str, tk.Label]
     data_to_labels = dict()
+
+    graph_buttons : list[tk.Button]
+    graph_buttons = list()
 
     timeForRandGen = 0
 
@@ -167,17 +181,17 @@ class Dashboard:
     def _makeButton(self, parent: tk.Frame, text: str, side=tk.LEFT, useconfigure=True, pack=True, fill=tk.BOTH, expand=True):
         button = tk.Button(master=parent,text=text, height=2)
         if(useconfigure):
-            button.configure(command=lambda: self._switchViews(button=button))
+            button.configure(command=lambda: self.switchLeftViews(button=button))
         button.pack(side=side,fill=fill,expand=expand) # pyright: ignore[reportArgumentType]
         return button
     
     
-    def _switchViews(self, button: tk.Button):
+    def switchLeftViews(self, button: tk.Button):
         """
         Switches which frame is being displayed in data_frame according to which button is pressed
         """
 
-        frame_to_pack = self.buttons_to_frames[button]
+        frame_to_pack = self.buttons_to_data_frames[button]
 
         if frame_to_pack.winfo_ismapped(): # the frame already is selected
             return
@@ -186,7 +200,7 @@ class Dashboard:
             # pack the correct frame
             # make the current button gray
             # make the other buttons white
-            for iterate_button, iterate_frame in self.buttons_to_frames.items():
+            for iterate_button, iterate_frame in self.buttons_to_data_frames.items():
                 if iterate_frame != frame_to_pack:
                     iterate_frame.forget()
                     iterate_button.configure(bg="white")
@@ -236,6 +250,7 @@ class Dashboard:
         for i in range(0,len(FIELDS)):
             name = FIELDS[i][0]
             unit = FIELDS[i][1]
+
 
             # the name
             param_field = self._makeLabel(
@@ -323,10 +338,6 @@ class Dashboard:
         
         # self.mapCanvas.bind('<Button-1>', self._next_image)
 
-        
-    
-    
-
 
         self.map_label.place(x=0,y=0)
     
@@ -359,9 +370,9 @@ class Dashboard:
         self._initMapFrame()
         self._initFaultFrame()
 
-        self.buttons_to_frames[self.fields_button] = self.fields_frame
-        self.buttons_to_frames[self.map_button] = self.map_frame
-        self.buttons_to_frames[self.fault_button] = self.faults_frame
+        self.buttons_to_data_frames[self.fields_button] = self.fields_frame
+        self.buttons_to_data_frames[self.map_button] = self.map_frame
+        self.buttons_to_data_frames[self.fault_button] = self.faults_frame
 
         
 
@@ -378,22 +389,31 @@ class Dashboard:
 
         # make buttons
         self.cockpit_sel = self._makeButton(self.select_graph_frame, "Cockpit Temp", tk.LEFT, useconfigure=False)
-        
-        self.POV_sel = self._makeButton(self.select_graph_frame, "POV Select", tk.LEFT, useconfigure=False)
+        self.POV_sel = self._makeButton(self.select_graph_frame, "POV", tk.LEFT, useconfigure=False)
         self.current_sel = self._makeButton(self.select_graph_frame, "Current", tk.LEFT, useconfigure=False)
         self.highest_temp_sel = self._makeButton(self.select_graph_frame, "High Temp", tk.LEFT, useconfigure=False)
 
-        self.cockpit_sel.configure(command=lambda: self._switchGraphs(GraphDataCockpit(self.parsedPackets, self.MAX_ELEMENTS)))
-        self.POV_sel.configure(command=lambda: self._switchGraphs(GraphDataPOV(self.parsedPackets, self.MAX_ELEMENTS)))
-        self.current_sel.configure(command=lambda: self._switchGraphs(GraphDataCurrent(self.parsedPackets, self.MAX_ELEMENTS)))
-        self.highest_temp_sel.configure(command=lambda: self._switchGraphs(GraphDataHighest(self.parsedPackets, self.MAX_ELEMENTS)))
+
+
+        self.graph_buttons.append(self.cockpit_sel)
+        self.graph_buttons.append(self.POV_sel)
+        self.graph_buttons.append(self.current_sel)
+        self.graph_buttons.append(self.highest_temp_sel)
+
+        # start on cockpitsel
+        self.cockpit_sel.config(bg="grey")
 
         # graph frame
         self.graph_frame = self._makeFrame(self.right_frame, tk.BOTTOM, "white")
 
-        self.graph_label = tk.Label(self.graph_frame, text="GRAPH", bg="white", font=("Comic Sans MS", 16))
+        self.graph_label = tk.Label(self.graph_frame, text=COCKPITSEL, bg="white", font=("Comic Sans MS", 16))
         self.graph_label.pack()
         # self.graph_frame, self.graph_label = self._box(self.graph_frame, "Graph Area", width = 1000, height = 600)
+
+        self.cockpit_sel.configure(command=lambda: self._switchGraphs(GraphDataCockpit(self.parsedPackets, self.MAX_ELEMENTS),self.cockpit_sel, COCKPITSEL, self.graph_label))
+        self.POV_sel.configure(command=lambda: self._switchGraphs(GraphDataPOV(self.parsedPackets, self.MAX_ELEMENTS), self.POV_sel, POVSEL, self.graph_label))
+        self.current_sel.configure(command=lambda: self._switchGraphs(GraphDataCurrent(self.parsedPackets, self.MAX_ELEMENTS), self.current_sel, CURRENTSEL, self.graph_label))
+        self.highest_temp_sel.configure(command=lambda: self._switchGraphs(GraphDataHighest(self.parsedPackets, self.MAX_ELEMENTS), self.highest_temp_sel, HITEMPSEL, self.graph_label))
 
         self.parsedPackets: deque[ParsedPacket]
         self.parsedPackets = deque()
@@ -401,13 +421,22 @@ class Dashboard:
         self.graph_data = GraphDataCockpit(self.parsedPackets, self.MAX_ELEMENTS)
         self.graph = Graph(self.graph_data, self.graph_frame, self.root, self.MAX_ELEMENTS)
 
-    def _switchGraphs(self, input: GraphDataInterface):
+    def _switchGraphs(self, input: GraphDataInterface, button: tk.Button, title: str, titleLabel: tk.Label):
         """
         Switches which graph is being displayed in the graph_frame according to which button is pressed
         """
         # switch!
         self.graph.setInput(input)
         self.graph_data = input
+        
+        # grey and un-grey
+        for x in self.graph_buttons:
+            if button == x:
+                x.config(bg="grey")
+            else:
+                x.config(bg="white")
+        
+        titleLabel.config(text=title)
 
     def __init__(self) -> None:
         self._initLeftSide()
