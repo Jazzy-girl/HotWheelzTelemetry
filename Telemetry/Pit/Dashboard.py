@@ -54,24 +54,40 @@ root
 from collections import deque
 
 #TODO: Re: Units, Do we need "0.1 V" or did Data Collection already convert it into regular 1 V, etc?
+SPD = "Speed"
+POV = "Pack Open Voltage"
+SUM = "Pack Summed Voltage"
+SOC = "Pack SOC"
+ADC = "Current ADC1"
+HITEMP = "High Temperature"
+LOTEMP = "Low Temperature"
+HITHERM = "High Thermistor ID"
+LOTHERM = "Low Thermistor ID"
+FANSPEED = "Fan Speed"
+HICELL = "Highest Cell"
+LOCELL = "Lowest Cell"
+HIVOLT = "High Cell Voltage ID"
+LOVOLT = "Low Cell Voltage ID"
+SUPPLY = "12v Supply"
 FIELDS = [
-    ["Speed", "Mph"],
-    ["Pack Open Voltage", "0.1 V"],
-    ["Pack Summed Voltage","0.1 V"],
-    ["Pack SOC","0.5 %"],
-    ["Current ADC1","???"],
-    ["High Temperature","C"],
-    ["Low Temperature","C"],
-    ["High Thermistor ID","N/A"],
-    ["Low Thermistor ID","N/A"],
-    ["Fan Speed"," 0 - 6"],
-    ["Highest Cell","0.0001 V"],
-    ["Lowest Cell","0.0001 V"],
-    ["High Cell Voltage ID","N/A"],
-    ["Low Cell Voltage ID","N/A"],
-    ["12v Supply", "0.1 V"]
+    [SPD, "Mph"],
+    [POV, "0.1 V"],
+    [SUM,"0.1 V"],
+    [SOC,"0.5 %"],
+    [ADC,"???"],
+    [HITEMP,"C"],
+    [LOTEMP,"C"],
+    [HITHERM,"N/A"],
+    [LOTHERM,"N/A"],
+    [FANSPEED," 0 - 6"],
+    [HICELL,"0.0001 V"],
+    [LOCELL,"0.0001 V"],
+    [HIVOLT,"N/A"],
+    [LOVOLT,"N/A"],
+    [SUPPLY, "0.1 V"]
 ]
 """
+Format: [term, units]
 All 15 fields that must be displayed.
 """
 
@@ -122,6 +138,9 @@ class Dashboard:
     buttons_to_frames : dict[tk.Button, tk.Frame]
 
     buttons_to_frames = dict()
+
+    data_to_labels : dict[str, tk.Label]
+    data_to_labels = dict()
 
     timeForRandGen = 0
 
@@ -181,6 +200,8 @@ class Dashboard:
         self.canvas_fields_frame = tk.Canvas(self.fields_frame)
         self.canvas_fields_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
+
+        # scrolling!
         self.scrollbar = tk.Scrollbar(self.fields_frame, orient=tk.VERTICAL,
                                       command=self.canvas_fields_frame.yview)
         self.scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
@@ -213,20 +234,28 @@ class Dashboard:
 
         # make actual fields: param, val, unit
         for i in range(0,len(FIELDS)):
+            name = FIELDS[i][0]
+            unit = FIELDS[i][1]
+
+            # the name
             param_field = self._makeLabel(
-                self.fields_grid, side=None, text=FIELDS[i][0], font=self.SMALL_FONT,
+                self.fields_grid, side=None, text=name, font=self.SMALL_FONT,
                 row=i+1, col=0, colspan=2, pady=1, pack=False, grid=True
             )
 
-            # connect to update-fields func, likely via a dict
+            # the updating value-- self. b/c need a permanent reference? maybe?
             val_field = self._makeLabel(
                 self.fields_grid, side=None, text="1234", font=self.SMALL_FONT,
                 row=i+1, col=2, pady=1, pack=False, grid=True
             )
+
+            # the unit
             unit_field = self._makeLabel(
-                self.fields_grid, side=None, text=FIELDS[i][1], font=self.SMALL_FONT,
+                self.fields_grid, side=None, text=unit, font=self.SMALL_FONT,
                 row=i+1, col=3, pady=1, pack=False, grid=True
             )
+
+            self.data_to_labels[name] = val_field
     
     # def _next_image(self):
     #     """
@@ -393,21 +422,39 @@ class Dashboard:
     
     def _randGenParsed(self):
         self.timeForRandGen += 1
-        parsed = ParsedPacket(randint(0,100),self.timeForRandGen,randint(0,100),randint(0,100),randint(0,100),
+        packet = ParsedPacket(randint(0,100),self.timeForRandGen,randint(0,100),randint(0,100),randint(0,100),
                               randint(0,100),randint(0,100),randint(0,100),randint(0,100),randint(0,100),
                               FaultSet(0),randint(0,100),randint(0,100),randint(0,100),randint(0,100),randint(0,100),
                               randint(0,100),randint(0,100),randint(0,100),randint(0,100),randint(0,100),randint(0,100),
                               randint(0,100),randint(0,100),randint(0,100))
-        self.graph_data.addElement(parsed)
         # print("rand gen parsed!")
+        self.addParsedPacket(packet=packet)
         self.root.after(500, self._randGenParsed)
     
-    
+    def _updateFields(self, value, labelName):
+        self.data_to_labels[labelName].config(text=value)
+
     def addParsedPacket(self, packet: ParsedPacket):
         """
-        Public method to add parsed packets
+        Public method to add parsed packets.
+        Adds the packet to the graph and updates the fields.
         """
         self.graph_data.addElement(packet)
+        self._updateFields(packet.motor_speed, SPD)
+        self._updateFields(packet.bms_open_voltage, POV)
+        self._updateFields(packet.bms_summed_voltage, SUM)
+        self._updateFields(packet.bms_soc, SOC)
+        self._updateFields(packet.bms_current, ADC)
+        self._updateFields(packet.bms_high_temp, HITEMP)
+        self._updateFields(packet.bms_low_temp, LOTEMP)
+        self._updateFields(packet.bms_high_therm_id, HITHERM)
+        self._updateFields(packet.bms_low_therm_id, LOTHERM)
+        self._updateFields(packet.bms_fan_speed, FANSPEED)
+        self._updateFields(packet.bms_high_cell_volt, HICELL)
+        self._updateFields(packet.bms_low_cell_volt, LOCELL)
+        self._updateFields(packet.bms_high_cell_id, HIVOLT)
+        self._updateFields(packet.bms_low_cell_id, LOVOLT)
+        self._updateFields(packet.bms_supply_12v, SUPPLY)
 
     
     # def _makeLabel(self, parent, text):

@@ -52,3 +52,8 @@ eg:
 but to get the car there on the map on here, you have to input 46.4115
 
 note that the y coords are about correct. (94.272625)
+
+7/2:
+TASKS
+    1. make fields update with new data
+    2. improve GPS-map accuracy
