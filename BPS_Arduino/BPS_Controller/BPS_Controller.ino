@@ -93,63 +93,7 @@ int highTemp = 0;
 #define CURRENT_LOWERBOUND -12
 #define CURRENT_UPPERBOUND 45
 
-void updateOutputs()
-{
-  if (highCellVolt != PLACEHOLDER && lowCellVolt != PLACEHOLDER)
-  {
 
-    // check for NMOS discharge
-    if (highCellVolt <= HIVOLT_BOUND && lowCellVolt > LOVOLT_BOUND && current >= CURRENT_LOWERBOUND && current <= CURRENT_UPPERBOUND && highTemp <= HITEMP_BOUND)
-    {
-      if (!dischargeEnable)
-      {
-        digitalWrite(BMS_NMOS_discharge_enable, HIGH);
-        dischargeEnable = true;
-      }
-    }
-    else
-    {
-      if (dischargeEnable)
-      {
-        digitalWrite(BMS_NMOS_discharge_enable, LOW);
-        dischargeEnable = false;
-      }
-    }
-
-    // check for NMOS charge
-    if (highCellVolt < HIVOLT_BOUND && lowCellVolt >= LOVOLT_BOUND && current >= CURRENT_LOWERBOUND && current <= CURRENT_UPPERBOUND && highTemp <= HITEMP_BOUND)
-    {
-      if (!chargeEnable)
-      {
-        digitalWrite(BMS_NMOS_charge_enable, HIGH);
-        chargeEnable = true;
-      }
-    }
-    else
-    {
-      if (chargeEnable)
-      {
-        digitalWrite(BMS_NMOS_charge_enable, LOW);
-        chargeEnable = false;
-      }
-    }
-  }
-
-  // check for BPS fault
-  if (highCellVolt > HIVOLT_BOUND && highCellVolt != PLACEHOLDER)
-  {
-    fault();
-  }
-  if (lowCellVolt < LOVOLT_BOUND && lowCellVolt != PLACEHOLDER)
-  {
-    fault();
-  }
-  if (current < CURRENT_LOWERBOUND || current > CURRENT_UPPERBOUND ||
-      highTemp > HITEMP_BOUND)
-  {
-    fault();
-  }
-}
 
 // If MPS is HIGH or Hitemp >= 55, Fault (HIGH; 5V) else output LOW; 0V
 
@@ -302,6 +246,64 @@ void fault()
   digitalWrite(BMS_NMOS_discharge_enable, LOW);
   while (1)
     ;
+}
+
+void updateOutputs()
+{
+  if (highCellVolt != PLACEHOLDER && lowCellVolt != PLACEHOLDER)
+  {
+
+    // check for NMOS discharge
+    if (highCellVolt <= HIVOLT_BOUND && lowCellVolt > LOVOLT_BOUND && current >= CURRENT_LOWERBOUND && current <= CURRENT_UPPERBOUND && highTemp <= HITEMP_BOUND)
+    {
+      if (!dischargeEnable)
+      {
+        digitalWrite(BMS_NMOS_discharge_enable, HIGH);
+        dischargeEnable = true;
+      }
+    }
+    else
+    {
+      if (dischargeEnable)
+      {
+        digitalWrite(BMS_NMOS_discharge_enable, LOW);
+        dischargeEnable = false;
+      }
+    }
+
+    // check for NMOS charge
+    if (highCellVolt < HIVOLT_BOUND && lowCellVolt >= LOVOLT_BOUND && current >= CURRENT_LOWERBOUND && current <= CURRENT_UPPERBOUND && highTemp <= HITEMP_BOUND)
+    {
+      if (!chargeEnable)
+      {
+        digitalWrite(BMS_NMOS_charge_enable, HIGH);
+        chargeEnable = true;
+      }
+    }
+    else
+    {
+      if (chargeEnable)
+      {
+        digitalWrite(BMS_NMOS_charge_enable, LOW);
+        chargeEnable = false;
+      }
+    }
+  }
+
+  // check for BPS fault
+  if (highCellVolt > HIVOLT_BOUND && highCellVolt != PLACEHOLDER)
+  {
+    fault();
+  }
+  if (lowCellVolt < LOVOLT_BOUND && lowCellVolt != PLACEHOLDER)
+  {
+    fault();
+  }
+  if (current < CURRENT_LOWERBOUND || current > CURRENT_UPPERBOUND ||
+      highTemp > HITEMP_BOUND)
+  {
+    fault();
+  }
 }
 
 void loop()
