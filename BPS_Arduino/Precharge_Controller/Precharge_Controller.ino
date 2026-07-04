@@ -5,9 +5,19 @@ Violet Enslow
 Ryanne Wilson
 
 
-Precharge Controller - Arduino Nano
+Precharge Controller - Arduino UNO
 
 Feel free to change any of the output pins!
+
+TODO: Update pins for UNO (check if you need to)
+
+To add:
+  - BMS_NMOS_Discharge_Enable
+    - output pin
+    - input pin (from Feather)
+  - BMS_NMOS_Charge_Enable
+    - output pin
+    - input pin (from Feather)
 */
 
 

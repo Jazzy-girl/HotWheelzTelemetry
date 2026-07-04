@@ -15,17 +15,44 @@ Inputs from BMS :
   CAN Bus
   Read CANBUS thermistor data, should be able to have the highest temperature in the data package
 
-Output to MPS Safety Circuit (via Nano intermediary):
+Output to MPS Safety Circuit (via UNO intermediary):
   Look at MPO and CAN Bus Data
   If MPO is High OR CAN Bus Highest Temperature Attribute is >= 55 C, output High (5 V)
   Otherwise, output Low (0V)
 
   If the CANbus never initializes, also causes a fault.
 
+TODO:
+OUTPUT -- BMS_NMOS_discharge_enable (new output)
+  Active HIGH if:
+    highest voltage cell <= 4.2V
+    && lowest voltage cell > 2.5V
+    && -12 A <= current <= 45 A
+    && highest temperature cell <= 55 C
+    && no BPS fault
+
+OUTPUT -- BMS_NMOS_charge enable (new output)
+  Active HIGH if:
+    If highest voltage cell < 4.2V
+    && lowest voltage cell >= 2.5V
+    && -12 A <= current <= 45 A
+    && highest temperature cell <= 55 C
+    && no BPS fault
+
+OUTPUT -- BPS_Fault (rewrite existing output logic)
+  Active HIGH if:
+    Highest voltage cell > 4.2V
+    || lowest voltage cell < 2.5V
+    || current > 45 A
+    || current < -12 A
+    || highest temperature cell > 55 C
+  once HIGH, can not go low
 
   HOW TO EDIT THIS :
     Change the #define BPS_Fault pin to the GPIO pin you want that will send out a 3.3v HIGH signal when CANbus data shows Thermistor is too hot.
     Change the bitrate if you edit the BMS's kbps settings.
+
+
 */
 
 #include <CANSAME5x.h>
@@ -34,14 +61,95 @@ Output to MPS Safety Circuit (via Nano intermediary):
 CANSAME5x CAN;
 
 // Output pins
-#define BPS_Fault 5 /**  */
+#define BPS_Fault 5                             /** Active HIGH */
+#define BMS_NMOS_discharge_enable 0xPLACEHOLDER /** Active HIGH */
+#define BMS_NMOS_charge_enable 0xPLACEHOLDER    /** Active HIGH */
+
+bool dischargeEnable = false;
+bool chargeEnable = false;
+#define PLACEHOLDER = 999999;
+int highCellVolt = PLACEHOLDER;
+int lowCellVolt = PLACEHOLDER;
+int current = 0;
+int highTemp = 0;
 
 #define bitrate 500000 // 500 kbps
 
 // CANbus constants
-#define correctID 0x003
-#define HITEMP_INDEX 2 // Index of High Temprature in CAN message
-#define OFFSET -40
+#define ID1 0x001
+#define ID2 0x002
+#define ID3 0x003
+#define LOWER_ID_Bound 0x000  // exlusive
+#define HIGHER_ID_Bound 0x004 // exclusive
+
+#define HITEMP_INDEX {2} // Index of High Temprature in CAN message
+#define HIVOLT_INDICES {4, 5}
+#define LOVOLT_INDICES {6, 7}
+#define CURRENT_INDICES {4, 5}
+
+#define HITEMP_BOUND 55
+#define HIVOLT_BOUND 0XPLACEHOLDER
+#define LOVOLT_BOUND 0XPLACEHOLDER
+#define CURRENT_LOWERBOUND -12
+#define CURRENT_UPPERBOUND 45
+
+void updateOutputs()
+{
+  if (highCellVolt != PLACEHOLDER && lowCellVolt != PLACEHOLDER)
+  {
+
+    // check for NMOS discharge
+    if (highCellVolt <= HIVOLT_BOUND && lowCellVolt > LOVOLT_BOUND && current >= CURRENT_LOWERBOUND && current <= CURRENT_UPPERBOUND && highTemp <= HITEMP_BOUND)
+    {
+      if (!dischargeEnable)
+      {
+        digitalWrite(BMS_NMOS_discharge_enable, HIGH);
+        dischargeEnable = true;
+      }
+    }
+    else
+    {
+      if (dischargeEnable)
+      {
+        digitalWrite(BMS_NMOS_discharge_enable, LOW);
+        dischargeEnable = false;
+      }
+    }
+
+    // check for NMOS charge
+    if (highCellVolt < HIVOLT_BOUND && lowCellVolt >= LOVOLT_BOUND && current >= CURRENT_LOWERBOUND && current <= CURRENT_UPPERBOUND && highTemp <= HITEMP_BOUND)
+    {
+      if (!chargeEnable)
+      {
+        digitalWrite(BMS_NMOS_charge_enable, HIGH);
+        chargeEnable = true;
+      }
+    }
+    else
+    {
+      if (chargeEnable)
+      {
+        digitalWrite(BMS_NMOS_charge_enable, LOW);
+        chargeEnable = false;
+      }
+    }
+  }
+
+  // check for BPS fault
+  if (highCellVolt > HIVOLT_BOUND && highCellVolt != PLACEHOLDER)
+  {
+    fault();
+  }
+  if (lowCellVolt < LOVOLT_BOUND && lowCellVolt != PLACEHOLDER)
+  {
+    fault();
+  }
+  if (current < CURRENT_LOWERBOUND || current > CURRENT_UPPERBOUND ||
+      highTemp > HITEMP_BOUND)
+  {
+    fault();
+  }
+}
 
 // If MPS is HIGH or Hitemp >= 55, Fault (HIGH; 5V) else output LOW; 0V
 
@@ -64,9 +172,15 @@ void setup()
 {
   // put your setup code here, to run once:
 
-  // BPS Fault -> Output to Nano
+  // BPS Fault -> Output to UNO
   pinMode(BPS_Fault, OUTPUT);
   digitalWrite(BPS_Fault, LOW);
+
+  // BMS_NMOS_discharge_enable
+  pinMode(BMS_NMOS_discharge_enable, OUTPUT);
+  digitalWrite(BMS_NMOS_discharge_enable, LOW);
+  pinMode(BMS_NMOS_charge_enable, OUTPUT);
+  digitalWrite(BMS_NMOS_charge_enable, LOW);
 
   // CANbus pins
   pinMode(PIN_CAN_STANDBY, OUTPUT);
@@ -89,6 +203,23 @@ void setup()
   Serial.println("End of setup");
 }
 
+int getIndex(int msgID, int index)
+{
+  return (msgID - 1) * 8 + index;
+}
+
+int getMultiByteBigEndianValue(int msgID, int numBytes, int[] indices)
+{
+  int value = 0;
+  for (int i = 0; i < numBytes; i++)
+  {
+    value << 8;
+    int index = getIndex(msgID, indices[i]);
+    value += messages[index];
+  }
+  return value;
+}
+
 void readCAN()
 {
   int packetSize = CAN.parsePacket();
@@ -97,9 +228,11 @@ void readCAN()
   if (packetSize)
   {
     long packetID = CAN.packetId();
-    if (packetID > 0 && packetID < 4)
+
+    if (packetID > LOWER_ID_Bound && packetID < HIGHER_ID_Bound)
     {
 
+      // iterate through
       int i = (packetID - 1) * 8;
       int end = i + 8;
       for (; i < end; ++i)
@@ -107,18 +240,22 @@ void readCAN()
         messages[i] = CAN.read();
       }
 
-      if (packetID == correctID)
+      switch (packetID)
       {
-        int tempindex = (correctID - 1) * 8 + HITEMP_INDEX;
-        int temp = messages[tempindex];
-        Serial.print("TEMP: ");
-        Serial.println(temp);
-
-        if (temp >= 55)
-        {
-          fault();
-        }
+      case ID1:
+        current = getMultiByteBigEndianValue(ID1, 2, CURRENT_INDICES);
+        break;
+      case ID2:
+        highCellVolt = getMultiByteBigEndianValue(ID2, 2, HIVOLT_INDICES);
+        lowCellVolt = getMultiByteBigEndianValue(ID2, 2, LOVOLT_INDICES);
+        break;
+      case ID3:
+        highTemp = getMultiByteBigEndianValue(ID3, 1, HITEMP_INDEX);
+        break;
+      default:
+        break;
       }
+
       unsigned char idCheck = (1 << packetID);
       messages[24] = messages[24] | idCheck;
     }
@@ -161,6 +298,8 @@ void sendBuffered()
 void fault()
 {
   digitalWrite(BPS_Fault, HIGH);
+  digitalWrite(BMS_NMOS_charge_enable, LOW);
+  digitalWrite(BMS_NMOS_discharge_enable, LOW);
   while (1)
     ;
 }
@@ -170,4 +309,5 @@ void loop()
   // put your main code here, to run repeatedly:
 
   readCAN();
+  updateOutputs();
 }
