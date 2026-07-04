@@ -127,8 +127,8 @@ SELECT_FAULTS = 2
 # MAP STUFF
 HALF = 0.0007945
 FULL = 0.001589
-OFFSET_LONG = (46.417919 + 0.000589)
-MIN_LONG = (46.40682 +0.000589)
+OFFSET_LONG = (46.417919 + FULL)
+MIN_LONG = (46.40682 + FULL)
 
 
 GPS_SCALE = 10**6
@@ -306,8 +306,8 @@ class Dashboard:
         lat: float
         lat = random.randint(lat_min,lat_max) * (10 ** -6)
 
-        long = 46.416308#46.413089 #46.411500 #OFFSET_LONG#
-        lat = 94.281347 #94.272625 #MAX_LAT#
+        long = 46.416472#46.416308#46.413089 ##46.416308 - 0.000589#46.413089 #46.411500 #OFFSET_LONG#
+        lat = 94.272614#94.272625#94.281347 #94.272625 #MAX_LAT#
 
         print(f"LONG: {long}\tLAT: {lat}\n")
         self._placeCar(long, lat)
