@@ -60,7 +60,7 @@ To add:
 #define Feather_NMOS_Charge_En 0xPLACEHOLDER    /** Active HIGH */
 
 bool dischargeEn = false; /** tracks state of NMOS_Discharge_En */
-bool chargeEn = false; /** tracks state of NMOS_Charge_En */
+bool chargeEn = false;    /** tracks state of NMOS_Charge_En */
 
 bool carRunning = false;        // True when the car can start driving ; as in, when precharging has finished and is successful.
 bool prechargeFailed = false;   // True if the precharge failed.
@@ -197,9 +197,11 @@ void precharge_fault()
 void bps_fault()
 {
   digitalWrite(BPS_Fault, HIGH);
+  digitalWrite(NMOS_Charge_En, LOW);
+  digitalWrite(NMOS_Discharge_En, LOW);
+  while (1)
+    ;
 }
-
-
 
 void loop()
 {
@@ -211,7 +213,8 @@ void loop()
     digitalWrite(NMOS_Charge_En, HIGH);
     chargeEn = true;
   }
-  if(chargeEn && !digitalRead(NMOS_Charge_En)){
+  if (chargeEn && !digitalRead(NMOS_Charge_En))
+  {
     digitalWrite(NMOS_Charge_En, LOW);
     chargeEn = false;
   }
@@ -222,11 +225,11 @@ void loop()
     digitalWrite(NMOS_Discharge_En, HIGH);
     dischargeEn = true;
   }
-  if(dischargeEn && !digitalRead(NMOS_Discharge_En)){
+  if (dischargeEn && !digitalRead(NMOS_Discharge_En))
+  {
     digitalWrite(NMOS_Discharge_En, LOW);
     dischargeEn = false;
   }
-
 
   // Precharge Fault
   if (digitalRead(BMS_DischargeEn) == LOW || prechargeTimedOut == true)

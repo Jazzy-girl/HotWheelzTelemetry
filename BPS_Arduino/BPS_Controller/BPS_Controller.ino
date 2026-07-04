@@ -67,6 +67,7 @@ CANSAME5x CAN;
 
 bool dischargeEnable = false;
 bool chargeEnable = false;
+bool BPSFaulted = false;
 #define PLACEHOLDER = 999999;
 int highCellVolt = PLACEHOLDER;
 int lowCellVolt = PLACEHOLDER;
@@ -88,12 +89,10 @@ int highTemp = 0;
 #define CURRENT_INDICES {4, 5}
 
 #define HITEMP_BOUND 55
-#define HIVOLT_BOUND 0XPLACEHOLDER
-#define LOVOLT_BOUND 0XPLACEHOLDER
+#define HIVOLT_BOUND 42000
+#define LOVOLT_BOUND 25000 
 #define CURRENT_LOWERBOUND -12
 #define CURRENT_UPPERBOUND 45
-
-
 
 // If MPS is HIGH or Hitemp >= 55, Fault (HIGH; 5V) else output LOW; 0V
 
@@ -244,12 +243,16 @@ void fault()
   digitalWrite(BPS_Fault, HIGH);
   digitalWrite(BMS_NMOS_charge_enable, LOW);
   digitalWrite(BMS_NMOS_discharge_enable, LOW);
-  while (1)
-    ;
+  BPSFaulted = true;
 }
 
 void updateOutputs()
 {
+  // If the BPS Faults, then everything should stay LOW.
+  if(BPSFaulted){
+    return;
+  }
+
   if (highCellVolt != PLACEHOLDER && lowCellVolt != PLACEHOLDER)
   {
 
