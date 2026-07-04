@@ -53,6 +53,13 @@ OUTPUT -- BPS_Fault (rewrite existing output logic)
     Change the bitrate if you edit the BMS's kbps settings.
 
 
+  PINS USED :
+
+  5 TAKEN
+  15 TAKEN
+  16 TAKEN
+
+  
 */
 
 #include <CANSAME5x.h>
@@ -62,8 +69,8 @@ CANSAME5x CAN;
 
 // Output pins
 #define BPS_Fault 5                             /** Active HIGH */
-#define BMS_NMOS_discharge_enable 0xPLACEHOLDER /** Active HIGH */
-#define BMS_NMOS_charge_enable 0xPLACEHOLDER    /** Active HIGH */
+#define BMS_NMOS_discharge_enable 15 /** Active HIGH */
+#define BMS_NMOS_charge_enable 16    /** Active HIGH */
 
 bool dischargeEnable = false;
 bool chargeEnable = false;

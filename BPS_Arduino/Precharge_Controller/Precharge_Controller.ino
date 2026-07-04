@@ -34,12 +34,12 @@ To add:
 // 11 TAKEN
 // 12 TAKEN
 //
-// 13
+// 13 
 // 14 TAKEN
-// 15
-// 16
-// 17
-// 18
+// 15 TAKEN
+// 16 TAKEN
+// 17 TAKEN
+// 18 TAKEN
 // 19
 //  output pins
 #define AIR_Precharge 4
@@ -48,16 +48,16 @@ To add:
 #define BPS_Fault 8
 #define LED_Discharge 3
 #define LED_Fault 10
-#define NMOS_Discharge_En 0xPLACEHOLDER /** Active HIGH */
-#define NMOS_Charge_En 0xPLACEHOLDER    /** Active HIGH */
+#define NMOS_Discharge_En 17 /** Active HIGH */
+#define NMOS_Charge_En 18    /** Active HIGH */
 
 // input pins
 #define Optocoupler 9 // input_pullup !
 #define BMS_DischargeEn 11
 #define BMS_MPO 12 // BMS Multi-Purpose Output
 #define Feather_BPS_Fault 2
-#define Feather_NMOS_Discharge_En 0xPLACEHOLDER /** Active HIGH */
-#define Feather_NMOS_Charge_En 0xPLACEHOLDER    /** Active HIGH */
+#define Feather_NMOS_Discharge_En 15 /** Active HIGH */
+#define Feather_NMOS_Charge_En 16    /** Active HIGH */
 
 bool dischargeEn = false; /** tracks state of NMOS_Discharge_En */
 bool chargeEn = false;    /** tracks state of NMOS_Charge_En */
