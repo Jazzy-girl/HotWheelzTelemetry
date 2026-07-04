@@ -72,9 +72,12 @@ CANSAME5x CAN;
 #define BMS_NMOS_discharge_enable 15 /** Active HIGH */
 #define BMS_NMOS_charge_enable 16    /** Active HIGH */
 
+// track state of the pins
 bool dischargeEnable = false;
 bool chargeEnable = false;
 bool BPSFaulted = false;
+
+// variables that track the latest packet data
 #define PLACEHOLDER = 999999;
 int highCellVolt = PLACEHOLDER;
 int lowCellVolt = PLACEHOLDER;

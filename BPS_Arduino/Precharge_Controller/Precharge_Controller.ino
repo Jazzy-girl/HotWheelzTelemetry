@@ -208,24 +208,24 @@ void loop()
   // put your main code here, to run repeatedly:
 
   // NMOS_Charge_En
-  if (!chargeEn && digitalRead(NMOS_Charge_En))
+  if (!chargeEn && digitalRead(Feather_NMOS_Charge_En))
   {
     digitalWrite(NMOS_Charge_En, HIGH);
     chargeEn = true;
   }
-  if (chargeEn && !digitalRead(NMOS_Charge_En))
+  if (chargeEn && !digitalRead(Feather_NMOS_Charge_En))
   {
     digitalWrite(NMOS_Charge_En, LOW);
     chargeEn = false;
   }
 
   // NMOS_Discharge_En
-  if (!dischargeEn && digitalRead(NMOS_Discharge_En))
+  if (!dischargeEn && digitalRead(Feather_NMOS_Discharge_En))
   {
     digitalWrite(NMOS_Discharge_En, HIGH);
     dischargeEn = true;
   }
-  if (dischargeEn && !digitalRead(NMOS_Discharge_En))
+  if (dischargeEn && !digitalRead(Feather_NMOS_Discharge_En))
   {
     digitalWrite(NMOS_Discharge_En, LOW);
     dischargeEn = false;
