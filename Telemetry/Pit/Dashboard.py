@@ -1,9 +1,10 @@
 from Telemetry.Pit.GraphData import *
 from Telemetry.Pit.Graph import Graph
 from Telemetry.packet import ParsedPacket, FaultSet
-
+import datetime
 import tkinter as tk
 from tkinter import font
+from tkinter import messagebox
 #import matplotlib.pyplot as plt
 #from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import random
@@ -162,6 +163,9 @@ class Dashboard:
 
     timeForRandGen = 0
 
+    activeFaults: set[str]
+    activeFaults = set()
+
 
 
 
@@ -211,7 +215,68 @@ class Dashboard:
                 else:
                     iterate_frame.pack(side=tk.BOTTOM, expand=True, fill=tk.BOTH)
                     iterate_button.configure(bg="grey")
-    
+
+    def _initFaultFrame(self):
+        self.faults_frame = self._makeFrame(parent=self.data_frame, side=tk.BOTTOM, expand=True, pack=False)
+        self.canvas_faults_frame = tk.Canvas(self.faults_frame)
+        self.canvas_faults_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+
+        # scrolling!
+        self.faults_scrollbar = tk.Scrollbar(self.faults_frame, orient=tk.VERTICAL,
+                                      command=self.canvas_faults_frame.yview)
+        self.faults_scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+
+        self.canvas_faults_frame.configure(yscrollcommand=self.faults_scrollbar.set)
+
+        self.faults_grid = self._makeFrame(self.canvas_faults_frame, side=None, bg="grey", pack=False, borderwidth=0)
+        self.canvas_faults_window = self.canvas_faults_frame.create_window((0,0), window=self.faults_grid, anchor="nw" )
+
+        self.faults_grid.bind("<Configure>", lambda e:
+                              self.canvas_faults_frame.
+                              configure(scrollregion=self.canvas_faults_frame.bbox("all")))
+        
+        self.canvas_faults_frame.bind("<Configure>", lambda e:
+                                self.canvas_faults_frame.itemconfig(self.canvas_faults_window, 
+                                width=e.width, height=e.height))
+        
+        # 2 columns
+        numcols = 4
+        for i in range(0,numcols):
+            self.faults_grid.columnconfigure(i, weight=1)
+        for i in range(0,len(FaultSet.FAULTS)+1): # +1 for the header
+            self.faults_grid.rowconfigure(i, weight=1)
+        
+        # fault label spans 3 cols; the start time label spans 1
+        fault_label = self._makeLabel(
+            self.faults_grid, side=None, pady=1, font=self.SMALL_FONT, text="Fault", pack=False, grid=True, colspan=3)
+        start_time_label = self._makeLabel(
+            self.faults_grid, side=None, pady=1,font=self.SMALL_FONT, text="Start Time", col=3, pack=False, grid=True)
+        
+    def _addFaultToFaultFrame(self, faultName: str):
+        """
+        Adds a given fault to the fault frame and to the activeFaults list.
+        Logs the name of the fault and the time it was received.
+        """
+        self.activeFaults.add(faultName)
+
+        self.faultField = self._makeLabel(self.faults_grid, side=None, text=faultName, font=self.SMALL_FONT,
+                                     row=len(self.activeFaults), col=0, colspan=3, pady=1, pack=False, grid=True)
+        
+        # get the current time
+        currentTime = datetime.datetime.now()
+        currentTime = currentTime.strftime("%H: %M")
+
+        self.timeField = self._makeLabel(self.faults_grid, side=None, text=currentTime, font=self.SMALL_FONT,
+                                     row=len(self.activeFaults), col=3, pady=1, pack=False, grid=True)
+
+        popup = tk.Toplevel(self.root)
+        popup.title("Fault Active")
+        popupLabel = tk.Label(popup, text=f"{faultName} active at {currentTime}")
+        popupLabel.pack()
+
+
+        
+
     def _initFieldsFrame(self):
         # Field Frame
         self.fields_frame = self._makeFrame(parent=self.data_frame,side=tk.BOTTOM, expand=True)
@@ -345,8 +410,7 @@ class Dashboard:
 
         self.map_label.place(x=0,y=0)
     
-    def _initFaultFrame(self):
-        self.faults_frame = self._makeFrame(parent=self.data_frame, side=tk.BOTTOM, expand=True, pack=False)
+
 
     def _initLeftSide(self):
         """
@@ -455,14 +519,16 @@ class Dashboard:
     
     def _randGenParsed(self):
         self.timeForRandGen += 1
+        faults = FaultSet(randint(0,21))
         packet = ParsedPacket(randint(0,100),self.timeForRandGen,randint(0,100),randint(0,100),randint(0,100),
                               randint(0,100),randint(0,100),randint(0,100),randint(0,100),randint(0,100),
-                              FaultSet(0),randint(0,100),randint(0,100),randint(0,100),randint(0,100),randint(0,100),
+                              faults,randint(0,100),randint(0,100),randint(0,100),randint(0,100),randint(0,100),
                               randint(0,100),randint(0,100),randint(0,100),randint(0,100),randint(0,100),randint(0,100),
                               randint(0,100),randint(0,100),randint(0,100))
         # print("rand gen parsed!")
         self.addParsedPacket(packet=packet)
         self.root.after(500, self._randGenParsed)
+        
     
     def _updateFields(self, value, labelName):
         self.data_to_labels[labelName].config(text=value)
@@ -470,8 +536,10 @@ class Dashboard:
     def addParsedPacket(self, packet: ParsedPacket):
         """
         Public method to add parsed packets.
-        Adds the packet to the graph and updates the fields.
+        Adds the packet to the graph and updates the fields and faults.
         """
+
+        # Fields!
         self.graph_data.addElement(packet)
         self._updateFields(packet.motor_speed, SPD)
         self._updateFields(packet.bms_open_voltage, POV)
@@ -488,6 +556,12 @@ class Dashboard:
         self._updateFields(packet.bms_high_cell_id, HIVOLT)
         self._updateFields(packet.bms_low_cell_id, LOVOLT)
         self._updateFields(packet.bms_supply_12v, SUPPLY)
+
+        # Faults!
+        for fault in packet.bms_faults.list_faults():
+            print(f"fault: {fault}")
+            if fault not in self.activeFaults:
+                self._addFaultToFaultFrame(fault)
 
     
     # def _makeLabel(self, parent, text):
