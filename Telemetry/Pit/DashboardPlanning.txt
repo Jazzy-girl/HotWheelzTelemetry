@@ -58,4 +58,12 @@ TASKS
     - HIGHPRIORITY: make fields update with new data-- FINISHED
     - make graph show which graph it's on + buttons greyed out -- FINISHED
     - improve GPS-map accuracy
-    
+
+7/7:
+TASKS
+    - Ensure data is sent to dashboard from arduino
+    - Faults:
+        A: Fault log. fault name + start time. faults will never go inactive once active.
+        B: Fault popup / banner.
+            for A & B, you'll need to keep track of which faults 
+            are already active so you dont get constant popups for already active faults.
