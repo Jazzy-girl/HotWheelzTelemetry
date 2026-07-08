@@ -559,7 +559,6 @@ class Dashboard:
 
         # Faults!
         for fault in packet.bms_faults.list_faults():
-            print(f"fault: {fault}")
             if fault not in self.activeFaults:
                 self._addFaultToFaultFrame(fault)
 
