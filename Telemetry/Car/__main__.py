@@ -1,9 +1,14 @@
 import time
 import base64
+import os
 
 from Telemetry.Car.GUI import CarSideGUI
 from Telemetry.packet import ParsedPacket, RawPacket, FaultSet
 import Telemetry.serial_recv as serial
+
+log_dir = "logs"
+# makes the log dir if it doesnt already exist
+os.makedirs(log_dir, exist_ok=True)
 
 log_file = open(time.strftime("logs/data_%Y%m%d_%H%M%S.csv", time.localtime()), "w+")
 print(file=log_file, sep=",", *(ParsedPacket._fields + ("sent",))) # write all of the field names to the file, then "sent", all comma-separated
@@ -13,7 +18,7 @@ usb_filepath = "/dev/ttyACM0"
 interface: serial.BackendInterface = serial.BackendInterface(usb_filepath)
 # debug testing
 
-do_debug = True
+do_debug = False
 
 def random_packet():
     randPacket = RawPacket(1,1,1,1,1,1,1,1,1,1,FaultSet(0),1,1,1,1,1,1,1,1,1,1,1)
