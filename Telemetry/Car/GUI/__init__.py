@@ -196,9 +196,9 @@ class CarSideGUI:
         faultLabel
         """
 
-        self.speedOutput = motor_speed
-        self.powerOutput = bms_soc
-        self.tempOutput = therm_temp
+        self.speedOutput.config(text=motor_speed)
+        self.powerOutput.config(text=bms_soc)
+        self.tempOutput.config(text=therm_temp)
 
         if(bms_faults != 0):
             self.faultActive = True
@@ -208,6 +208,16 @@ class CarSideGUI:
             self.faultActive = False
             self.faultLabel.place_forget()
     
+    # FOR DEBUG PURPOSES!
+    def randUpdate(self):
+        from random import randint
+        self.update_fields(randint(0,100), randint(0,100), randint(0,100), FaultSet(0))
+        self.root.after(100, self.randUpdate)
+
+    
     def start(self):
         self._update_camera()
+        #self.randUpdate() # FOR DEBUG!
         self.root.mainloop()
+
+

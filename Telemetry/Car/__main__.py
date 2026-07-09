@@ -1,6 +1,7 @@
 import time
 import base64
 import os
+from random import randint
 
 from Telemetry.Car.GUI import CarSideGUI
 from Telemetry.packet import ParsedPacket, RawPacket, FaultSet
@@ -15,13 +16,16 @@ print(file=log_file, sep=",", *(ParsedPacket._fields + ("sent",))) # write all o
 
 gui: CarSideGUI = CarSideGUI()
 usb_filepath = "/dev/ttyACM0"
-interface: serial.BackendInterface = serial.BackendInterface(usb_filepath)
+
+do_debug = True
+interface: serial.BackendInterface
+if not do_debug:
+    serial.BackendInterface(usb_filepath)
 # debug testing
 
-do_debug = False
-
 def random_packet():
-    randPacket = RawPacket(1,1,1,1,1,1,1,1,1,1,FaultSet(0),1,1,1,1,1,1,1,1,1,1,1)
+
+    randPacket = RawPacket(randint(0,100),randint(0,100),randint(0,100),randint(0,100),randint(0,100),randint(0,100),randint(0,100),randint(0,100),randint(0,100),randint(0,100),FaultSet(0),randint(0,100),randint(0,100),randint(0,100),randint(0,100),randint(0,100),randint(0,100),randint(0,100),randint(0,100),randint(0,100),randint(0,100),randint(0,100))
     return randPacket
 
 def update_data():
@@ -36,3 +40,5 @@ def update_data():
 
 update_data()
 gui.start()
+
+
