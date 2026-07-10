@@ -78,7 +78,7 @@ bool chargeEnable = false;
 bool BPSFaulted = false;
 
 // variables that track the latest packet data
-#define PLACEHOLDER = 999999;
+#define PLACEHOLDER 999999;
 int highCellVolt = PLACEHOLDER;
 int lowCellVolt = PLACEHOLDER;
 int current = 0;
@@ -161,7 +161,7 @@ int getIndex(int msgID, int index)
   return (msgID - 1) * 8 + index;
 }
 
-int getMultiByteBigEndianValue(int msgID, int numBytes, int[] indices)
+int getMultiByteBigEndianValue(int msgID, int numBytes, int indices[])
 {
   int value = 0;
   for (int i = 0; i < numBytes; i++)
