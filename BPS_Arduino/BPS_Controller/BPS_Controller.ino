@@ -78,7 +78,7 @@ bool chargeEnable = false;
 bool BPSFaulted = false;
 
 // variables that track the latest packet data
-#define PLACEHOLDER 999999;
+#define PLACEHOLDER 999999
 int highCellVolt = PLACEHOLDER;
 int lowCellVolt = PLACEHOLDER;
 int current = 0;
@@ -93,10 +93,10 @@ int highTemp = 0;
 #define LOWER_ID_Bound 0x000  // exlusive
 #define HIGHER_ID_Bound 0x004 // exclusive
 
-#define HITEMP_INDEX {2} // Index of High Temprature in CAN message
-#define HIVOLT_INDICES {4, 5}
-#define LOVOLT_INDICES {6, 7}
-#define CURRENT_INDICES {4, 5}
+#define HITEMP_INDEX 2 // Index of High Temprature in CAN message
+#define HIVOLT_INDICES 4 // 4 5
+#define LOVOLT_INDICES 6 // 6 7
+#define CURRENT_INDICES 4 // 4 5
 
 #define HITEMP_BOUND 55
 #define HIVOLT_BOUND 42000
@@ -161,14 +161,14 @@ int getIndex(int msgID, int index)
   return (msgID - 1) * 8 + index;
 }
 
-int getMultiByteBigEndianValue(int msgID, int numBytes, int indices[])
+int getMultiByteBigEndianValue(int msgID, int numBytes, int index)
 {
   int value = 0;
   for (int i = 0; i < numBytes; i++)
   {
-    value << 8;
-    int index = getIndex(msgID, indices[i]);
-    value += messages[index];
+    value <<= 8;
+    int msgIndex = getIndex(msgID, index + i);
+    value += messages[msgIndex];
   }
   return value;
 }

@@ -17,10 +17,10 @@ print(file=log_file, sep=",", *(ParsedPacket._fields + ("sent",))) # write all o
 gui: CarSideGUI = CarSideGUI()
 usb_filepath = "/dev/ttyACM0"
 
-do_debug = True
+do_debug = False
 interface: serial.BackendInterface
 if not do_debug:
-    serial.BackendInterface(usb_filepath)
+    interface = serial.BackendInterface(usb_filepath)
 # debug testing
 
 def random_packet():
