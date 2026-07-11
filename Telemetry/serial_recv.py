@@ -30,7 +30,7 @@ class BackendInterface:
         # print(raw.strip())
         return BackendMessage.parse(raw) # type: ignore
     def __iter__(self) -> Iterator['BackendMessage']:
-        return map(BackendMessage.parse, self.interface)
+        return map(BackendMessage.parse, self.interface) # type: ignore
 
 @dataclass(frozen=True)
 class BackendMessage:
