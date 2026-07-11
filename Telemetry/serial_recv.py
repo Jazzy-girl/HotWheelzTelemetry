@@ -1,3 +1,4 @@
+import time
 import serial
 import os
 import io
@@ -13,12 +14,14 @@ class BackendInterface:
                 self.interface = open(interface)
             else:
                 ser = serial.Serial(interface, baudrate)
+                time.sleep(2)
                 # ser.open()
                 self.interface = io.TextIOWrapper(io.BufferedReader(ser), newline='\n')
+                print("connected!")
         else:
             self.interface = interface
     def read(self) -> 'BackendMessage':
-        return BackendMessage.parse(self.interface.readline())
+        return BackendMessage.parse(self.interface.readline().strip())
     def __iter__(self) -> Iterator['BackendMessage']:
         return map(BackendMessage.parse, self.interface)
 

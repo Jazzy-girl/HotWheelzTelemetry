@@ -1,0 +1,1 @@
+checksum,timestamp,gps_lon,gps_lat,therm_reading,therm_voltage,therm_resistance,therm_temp,motor_speed,gps_speed,bms_faults,bms_current,bms_open_voltage,bms_summed_voltage,bms_supply_12v,bms_high_cell_volt,bms_low_cell_volt,bms_high_cell_id,bms_low_cell_id,bms_high_temp,bms_low_temp,bms_high_therm_id,bms_low_therm_id,bms_soc,bms_fan_speed,sent
