@@ -1,5 +1,5 @@
-import time
 import threading
+import time
 import base64
 import os
 from random import randint
@@ -18,7 +18,7 @@ print(file=log_file, sep=",", *(ParsedPacket._fields + ("sent",))) # write all o
 gui: CarSideGUI = CarSideGUI()
 usb_filepath = "/dev/ttyACM0"
 
-do_debug = False
+do_debug = True
 interface: serial.BackendInterface
 if not do_debug:
     interface = serial.BackendInterface(usb_filepath)
@@ -26,7 +26,7 @@ if not do_debug:
 
 def random_packet():
 
-    randPacket = RawPacket(randint(0,100),randint(0,100),randint(0,100),randint(0,100),randint(0,100),randint(0,100),randint(0,100),randint(0,100),randint(0,100),randint(0,100),FaultSet(0),randint(0,100),randint(0,100),randint(0,100),randint(0,100),randint(0,100),randint(0,100),randint(0,100),randint(0,100),randint(0,100),randint(0,100),randint(0,100))
+    randPacket = RawPacket(randint(1,100),randint(1,100),randint(1,100),randint(1,100),randint(1,100),randint(1,100),randint(1,100),randint(1,100),randint(1,100),randint(1,100),FaultSet(0),randint(1,100),randint(1,100),randint(1,100),randint(1,100),randint(1,100),randint(1,100),randint(1,100),randint(1,100),randint(1,100),randint(1,100),randint(1,100))
     return randPacket
 
 def update_data():
@@ -44,5 +44,3 @@ thd.start()
 
 # update_data()
 gui.start()
-
-
