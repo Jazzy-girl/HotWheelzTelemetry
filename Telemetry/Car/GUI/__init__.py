@@ -195,10 +195,11 @@ class CarSideGUI:
         tempOutput
         faultLabel
         """
-
+        formatted_therm = "{:.2f}".format(therm_temp)
+        formatted_soc = "{:.2f}".format(bms_soc)
         self.speedOutput.config(text=motor_speed)
-        self.powerOutput.config(text=bms_soc)
-        self.tempOutput.config(text=therm_temp)
+        self.powerOutput.config(text=formatted_soc)
+        self.tempOutput.config(text=formatted_therm)
 
         if(bms_faults != 0):
             self.faultActive = True
