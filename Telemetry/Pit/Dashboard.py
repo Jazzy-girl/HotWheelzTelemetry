@@ -512,7 +512,7 @@ class Dashboard:
         
     
     def start(self):
-        self.root.after(100, self._randGenParsed)
+        # self.root.after(100, self._randGenParsed)
         self.root.after(1000, self.graph.start)
         
         self.root.mainloop()
@@ -527,7 +527,7 @@ class Dashboard:
                               randint(0,100),randint(0,100),randint(0,100))
         # print("rand gen parsed!")
         self.addParsedPacket(packet=packet)
-        self.root.after(500, self._randGenParsed)
+        # self.root.after(500, self._randGenParsed)
         
     
     def _updateFields(self, value, labelName):
