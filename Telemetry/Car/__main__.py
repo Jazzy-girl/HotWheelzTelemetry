@@ -24,13 +24,19 @@ if not do_debug:
     interface = serial.BackendInterface(usb_filepath)
 # debug testing
 
+receivedRead: serial.BackendMessage
+
 def random_packet():
 
     randPacket = RawPacket(randint(1,100),randint(1,100),randint(1,100),randint(1,100),randint(1,100),randint(1,100),randint(1,100),randint(1,100),randint(1,100),randint(1,100),FaultSet(0),randint(1,100),randint(1,100),randint(1,100),randint(1,100),randint(1,100),randint(1,100),randint(1,100),randint(1,100),randint(1,100),randint(1,100),randint(1,100))
     return randPacket
 
+def threadCall():
+    while True:
+        receivedRead = interface.read()
+
 def update_data():
-    message = serial.PacketBackendMessage.from_packet(random_packet()) if do_debug else interface.read()
+    message = serial.PacketBackendMessage.from_packet(random_packet()) if do_debug else receivedRead
     if isinstance(message, serial.PacketBackendMessage):
         packet = message.packet
         parsed = packet.parse()
@@ -39,7 +45,7 @@ def update_data():
         gui.update_fields(parsed.motor_speed, parsed.bms_soc, parsed.therm_temp, parsed.bms_faults)
     gui.root.after(100, update_data)
 
-thd = threading.Thread(daemon=True, target=update_data)
+thd = threading.Thread(daemon=True, target=threadCall)
 thd.start()
 
 # update_data()
