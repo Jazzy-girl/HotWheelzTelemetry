@@ -37,6 +37,8 @@ class BackendMessage:
         return len(self.raw)
     @staticmethod
     def parse(raw: str) -> 'BackendMessage':
+        if len(raw) == 0:
+            return PrettyBackendMessage(raw, raw)
         if raw[-1] == '\n':
             raw = raw[:-1]
         if raw[0] == '!':
