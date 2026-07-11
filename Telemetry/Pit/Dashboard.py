@@ -577,8 +577,8 @@ class Dashboard:
         label.pack(pady=5)
         return frame, label
 
-dashboard = Dashboard()
-dashboard.start()
+# dashboard = Dashboard()
+# dashboard.start()
 
 # def box(parent, title_text, width=150, height = 120):
 #     frame = tk.Frame(parent, bg="white", relief=tk.RIDGE, width=width, height=height, borderwidth=5)

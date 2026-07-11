@@ -13,7 +13,7 @@ class BackendInterface:
                 self.interface = open(interface)
             else:
                 ser = serial.Serial(interface, baudrate)
-                ser.open()
+                # ser.open()
                 self.interface = io.TextIOWrapper(io.BufferedReader(ser), newline='\n')
         else:
             self.interface = interface
