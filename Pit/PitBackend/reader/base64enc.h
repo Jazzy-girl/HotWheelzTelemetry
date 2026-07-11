@@ -1,11 +1,14 @@
+#ifndef BASE64HFILE
+#define BASE64HFILE
 
 #define B64_SIZE ((BIN_SIZE + 2) / 3) * 4
 
 // the alphabet string for base64
-const char* ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+static const char* ALPHABET_64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
 // the input, binary buffer
 char binBuf[BIN_SIZE];
+
 // the output, base64 buffer, which will be null-terminated
 char b64Buf[B64_SIZE + 1];
 
@@ -19,17 +22,17 @@ void encodeBase64(unsigned char bytes) {
         case 0: break;
         case 1:
             a = readPtr[0];
-            writePtr[0] = ALPHABET[a >> 2];
-            writePtr[1] = ALPHABET[(a & 0x03) << 4];
+            writePtr[0] = ALPHABET_64[a >> 2];
+            writePtr[1] = ALPHABET_64[(a & 0x03) << 4];
             writePtr[2] = writePtr[3] = '=';
             writePtr += 4;
             break;
         case 2:
             a = readPtr[0];
             b = readPtr[1];
-            writePtr[0] = ALPHABET[a >> 2];
-            writePtr[1] = ALPHABET[((a & 0x03) << 4) | (b >> 4)];
-            writePtr[2] = ALPHABET[(b & 0x0f) << 2];
+            writePtr[0] = ALPHABET_64[a >> 2];
+            writePtr[1] = ALPHABET_64[((a & 0x03) << 4) | (b >> 4)];
+            writePtr[2] = ALPHABET_64[(b & 0x0f) << 2];
             writePtr[3] = '=';
             writePtr += 4;
             break;
@@ -37,10 +40,10 @@ void encodeBase64(unsigned char bytes) {
             a = readPtr[0];
             b = readPtr[1];
             c = readPtr[2];
-            writePtr[0] = ALPHABET[a >> 2];
-            writePtr[1] = ALPHABET[((a & 0x03) << 4) | (b >> 4)];
-            writePtr[2] = ALPHABET[((b & 0x0f) << 2) | (c >> 6)];
-            writePtr[3] = ALPHABET[c & 0x3f];
+            writePtr[0] = ALPHABET_64[a >> 2];
+            writePtr[1] = ALPHABET_64[((a & 0x03) << 4) | (b >> 4)];
+            writePtr[2] = ALPHABET_64[((b & 0x0f) << 2) | (c >> 6)];
+            writePtr[3] = ALPHABET_64[c & 0x3f];
             readPtr += 3;
             writePtr += 4;
             bytes -= 3;
@@ -48,3 +51,4 @@ void encodeBase64(unsigned char bytes) {
     }
     *writePtr = 0;
 }
+#endif
