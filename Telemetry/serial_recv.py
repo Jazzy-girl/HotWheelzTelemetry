@@ -13,22 +13,22 @@ class BackendInterface:
             if os.path.isfile(interface):
                 self.interface = open(interface)
             else:
-                self.interface = serial.Serial(interface, baudrate, timeout=1)
+                ser = serial.Serial(interface, baudrate, timeout=1)
                 # time.sleep(2)
                 # ser.open()
-                # self.interface = io.TextIOWrapper(io.BufferedReader(ser), newline='\n')
+                self.interface = io.TextIOWrapper(io.BufferedReader(ser), newline='\n')
                 print("connected!")
         else:
             self.interface = interface
     def read(self) -> 'BackendMessage':
-        # return BackendMessage.parse(self.interface.readline().strip())
-        raw = self.interface.readline()
-        if isinstance(raw, bytes):
-            raw = raw.decode("ascii",errors="replace")
-        raw = raw[:-2]
-        # print(raw)
-        # print(raw.strip())
-        return BackendMessage.parse(raw) # type: ignore
+        return BackendMessage.parse(self.interface.readline().strip())
+        # raw = self.interface.readline()
+        # if isinstance(raw, bytes):
+        #     raw = raw.decode("ascii",errors="replace")
+        # raw = raw[:-2]
+        # # print(raw)
+        # # print(raw.strip())
+        # return BackendMessage.parse(raw) # type: ignore
     def __iter__(self) -> Iterator['BackendMessage']:
         return map(BackendMessage.parse, self.interface) # type: ignore
 

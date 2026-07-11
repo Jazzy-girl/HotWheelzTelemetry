@@ -1,4 +1,5 @@
 import time
+import threading
 import base64
 import os
 from random import randint
@@ -38,7 +39,10 @@ def update_data():
         gui.update_fields(parsed.motor_speed, parsed.bms_soc, parsed.therm_temp, parsed.bms_faults)
     gui.root.after(100, update_data)
 
-update_data()
+thd = threading.Thread(daemon=True, target=update_data)
+thd.start()
+
+# update_data()
 gui.start()
 
 
