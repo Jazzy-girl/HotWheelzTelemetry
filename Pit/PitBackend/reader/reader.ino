@@ -1,7 +1,8 @@
 #include <SPI.h>
 #include <RH_RF95.h>
 
-#define BIN_SIZE RH_RF95_MAX_MESSAGE_LEN
+// #define BIN_SIZE RH_RF95_MAX_MESSAGE_LEN
+#define BIN_SIZE 48
 
 #include "base64enc.h"
 
@@ -40,7 +41,8 @@ void setup() {
 }
 
 void loop() {
-    uint8_t len = RH_RF95_MAX_MESSAGE_LEN;
+    // uint8_t len = RH_RF95_MAX_MESSAGE_LEN;
+    uint8_t len = BIN_SIZE;
     if (rf.available() && rf.recv(binBuf, &len)) {
         encodeBase64(len);
         Serial.println(b64Buf);

@@ -22,7 +22,10 @@ class BackendInterface:
             self.interface = interface
     def read(self) -> 'BackendMessage':
         # return BackendMessage.parse(self.interface.readline().strip())
-        raw = self.ser.readline().strip().decode("ascii",errors="replace")
+        raw = self.ser.readline().decode("ascii",errors="replace")
+        raw = raw[:-2]
+        # print(raw)
+        # print(raw.strip())
         return BackendMessage.parse(raw)
     def __iter__(self) -> Iterator['BackendMessage']:
         return map(BackendMessage.parse, self.interface)

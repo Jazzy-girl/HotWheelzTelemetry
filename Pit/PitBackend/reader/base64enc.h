@@ -5,15 +5,15 @@
 const char* ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
 // the input, binary buffer
-char binBuf[BIN_SIZE];
+unsigned char binBuf[BIN_SIZE];
 // the output, base64 buffer, which will be null-terminated
 char b64Buf[B64_SIZE + 1];
 
 // read data from binBuf and write it to b64Buf, with a buffer length of bytes
 void encodeBase64(unsigned char bytes) {
-    char* readPtr = binBuf;
-    char* writePtr = b64Buf;
-    char a, b, c;
+    unsigned char* readPtr = binBuf;
+    unsigned char* writePtr = b64Buf;
+    unsigned char a, b, c;
     LOOP_START:
     switch (bytes) {
         case 0: break;
