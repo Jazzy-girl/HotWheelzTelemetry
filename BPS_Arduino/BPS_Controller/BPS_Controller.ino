@@ -3,7 +3,6 @@ Authors:
 Natu Benyam Demeke
 Ryanne Wilson
 
-
 BPS Controller - Arduino Feather M4 CAN
 
 Sends CAN messages over I2C. LSB of last byte (25th byte) is parity bit. Uses even parity, so there should be an even number of 1s.
@@ -81,8 +80,8 @@ bool BPSFaulted = false;
 #define PLACEHOLDER 999999
 int highCellVolt = PLACEHOLDER;
 int lowCellVolt = PLACEHOLDER;
-int current = 0;
-int highTemp = 0;
+int current = PLACEHOLDER;
+int highTemp = PLACEHOLDER;
 
 #define bitrate 500000 // 500 kbps
 
@@ -263,7 +262,7 @@ void updateOutputs()
     return;
   }
 
-  if (highCellVolt != PLACEHOLDER && lowCellVolt != PLACEHOLDER)
+  if (highCellVolt != PLACEHOLDER && lowCellVolt != PLACEHOLDER && highTemp != PLACEHOLDER && current != PLACEHOLDER)
   {
 
     // check for NMOS discharge
@@ -285,8 +284,11 @@ void updateOutputs()
     }
 
     // check for NMOS charge
-    if (highCellVolt < HIVOLT_BOUND && lowCellVolt >= LOVOLT_BOUND && current >= CURRENT_LOWERBOUND && current <= CURRENT_UPPERBOUND && highTemp <= HITEMP_BOUND)
+    if (highCellVolt < HIVOLT_BOUND && lowCellVolt >= LOVOLT_BOUND
+    && current >= CURRENT_LOWERBOUND && current <= CURRENT_UPPERBOUND && 
+    highTemp <= HITEMP_BOUND)
     {
+      //TODO: 
       if (!chargeEnable)
       {
         digitalWrite(BMS_NMOS_charge_enable, HIGH);
@@ -312,9 +314,10 @@ void updateOutputs()
   {
     fault();
   }
-  if (current < CURRENT_LOWERBOUND || current > CURRENT_UPPERBOUND ||
-      highTemp > HITEMP_BOUND)
-  {
+  if(highTemp != PLACEHOLDER && highTemp > HITEMP_BOUND){
+    fault();
+  }
+  if(current < CURRENT_LOWERBOUND || current > CURRENT_UPPERBOUND && current != PLACEHOLDER){
     fault();
   }
 }
