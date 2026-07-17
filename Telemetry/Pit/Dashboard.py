@@ -125,18 +125,24 @@ SELECT_MAP = 1
 SELECT_FAULTS = 2
 
 # MAP STUFF
-HALF = 0.0007945
-FULL = 0.001589
-OFFSET_LONG = (46.417919)
-MIN_LONG = (46.40682)
 
+OFFSET_ACTUAL_LAT = (46.417919)
+MIN_ACTUAL_LAT = (46.40682)
+
+X_ANCHOR_1 = 357
+X_ANCHOR_2 = 122
+LAT_ANCHOR_1 = 46.413089
+LAT_ANCHOR_2 = 46.416308
+
+LAT_SCALE = (X_ANCHOR_2 - X_ANCHOR_1) / (LAT_ANCHOR_2 - LAT_ANCHOR_1)
+LAT_OFFSET = X_ANCHOR_1 - LAT_SCALE * LAT_ANCHOR_1
 
 GPS_SCALE = 10**6
-WIDTH_LONG = (OFFSET_LONG - MIN_LONG) * GPS_SCALE
+WIDTH_ACTUAL_LAT = (OFFSET_ACTUAL_LAT - MIN_ACTUAL_LAT) * GPS_SCALE
 
-OFFSET_LAT = 94.266378
-MAX_LAT = 94.281506
-HEIGHT_LAT = (OFFSET_LAT - MAX_LAT) * GPS_SCALE
+OFFSET_ACTUAL_LONG = 94.266378
+MAX_ACTUAL_LONG = 94.281506
+HEIGHT_ACTUAL_LONG = (OFFSET_ACTUAL_LONG - MAX_ACTUAL_LONG) * GPS_SCALE
 
 class Dashboard:
     root = tk.Tk()
@@ -339,27 +345,12 @@ class Dashboard:
             )
 
             self.data_to_labels[name] = val_field
-    
-    # def _next_image(self):
-    #     """
-    #     """
-    #     self.mapCanvas.move(self.item,10,0)
 
-    def _placeCar(self, long: float, lat: float):
-        width_px = MAP_DIMENSIONS[0]
+    def _placeCar(self, actual_lat: float, actual_long: float):
         height_px = MAP_DIMENSIONS[1]
 
-        x1 = 357
-        x2 = 122
-        l1 = 46.413089
-        l2 = 46.416308
-
-        scale = (x2 - x1) / (l2 - l1)
-        offset = x1 - scale * l1
-        x = scale * long + offset
-
-        # x = -1 * ((long - OFFSET_LONG)*(GPS_SCALE)) // (WIDTH_LONG / width_px)
-        y = -1 * ((lat - OFFSET_LAT)*(GPS_SCALE)) // (HEIGHT_LAT / height_px)
+        x = LAT_SCALE * actual_lat + LAT_OFFSET
+        y = -1 * ((actual_long - OFFSET_ACTUAL_LONG)*(GPS_SCALE)) // (HEIGHT_ACTUAL_LONG / height_px)
         print(f"x: {x}\ty: {y}\n")
         self.car.place(x=x,y=y,anchor=tk.CENTER)
 
@@ -369,21 +360,21 @@ class Dashboard:
         """
         """
         
-        long_min = int(MIN_LONG*GPS_SCALE)
-        long_max = int(OFFSET_LONG*GPS_SCALE)
-        lat_min = int(OFFSET_LAT*GPS_SCALE)
-        lat_max = int(MAX_LAT*GPS_SCALE)
+        actual_lat_min = int(MIN_ACTUAL_LAT*GPS_SCALE)
+        actual_lat_max = int(OFFSET_ACTUAL_LAT*GPS_SCALE)
+        actual_long_min = int(OFFSET_ACTUAL_LONG*GPS_SCALE)
+        actual_long_max = int(MAX_ACTUAL_LONG*GPS_SCALE)
 
-        long: float
-        long = random.randint(long_min,long_max) * (10 ** -6)
-        lat: float
-        lat = random.randint(lat_min,lat_max) * (10 ** -6)
+        actual_lat: float
+        actual_lat = random.randint(actual_lat_min,actual_lat_max) * (10 ** -6)
+        actual_long: float
+        actual_long = random.randint(actual_long_min,actual_long_max) * (10 ** -6)
 
-        long = 46.41787778#46.413089 #46.416472 #46.416308#46.413089 ##46.416308 - 0.000589#46.413089 #46.411500 #OFFSET_LONG#
-        lat = 94.27161944#94.272614 #94.272614 #94.272625#94.281347 #94.272625 #MAX_LAT#
+        actual_lat = 46.41787778#46.413089 #46.416472 #46.416308#46.413089 ##46.416308 - 0.000589#46.413089 #46.411500 #OFFSET_LONG#
+        actual_long = 94.27161944#94.272614 #94.272614 #94.272625#94.281347 #94.272625 #MAX_LAT#
 
-        print(f"LONG: {long}\tLAT: {lat}\n")
-        self._placeCar(long, lat)
+        print(f"LONG: {actual_lat}\tLAT: {actual_long}\n")
+        self._placeCar(actual_lat, actual_long)
 
     def _initMapFrame(self):
         self.map_frame = self._makeFrame(parent=self.data_frame, side=tk.BOTTOM, expand=True, pack=False)
@@ -569,6 +560,9 @@ class Dashboard:
         for fault in packet.bms_faults.list_faults():
             if fault not in self.activeFaults:
                 self._addFaultToFaultFrame(fault)
+        
+        # GPS UPDATE!
+        self._placeCar(packet.gps_lat, packet.gps_lon)
 
     
     # def _makeLabel(self, parent, text):
