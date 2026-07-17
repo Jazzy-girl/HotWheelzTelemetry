@@ -455,10 +455,10 @@ class Dashboard:
         self.select_graph_frame = self._makeFrame(self.right_frame, tk.TOP, "white")
 
         # make buttons
-        self.cockpit_sel = self._makeButton(self.select_graph_frame, "Cockpit Temp", tk.LEFT, useconfigure=False)
-        self.POV_sel = self._makeButton(self.select_graph_frame, "POV", tk.LEFT, useconfigure=False)
-        self.current_sel = self._makeButton(self.select_graph_frame, "Current", tk.LEFT, useconfigure=False)
-        self.highest_temp_sel = self._makeButton(self.select_graph_frame, "High Temp", tk.LEFT, useconfigure=False)
+        self.cockpit_sel = self._makeButton(self.select_graph_frame, "Cockpit Temp (C)", tk.LEFT, useconfigure=False)
+        self.POV_sel = self._makeButton(self.select_graph_frame, "POV (V)", tk.LEFT, useconfigure=False)
+        self.current_sel = self._makeButton(self.select_graph_frame, "Current (V)", tk.LEFT, useconfigure=False)
+        self.highest_temp_sel = self._makeButton(self.select_graph_frame, "High Temp (V)", tk.LEFT, useconfigure=False)
 
 
 
