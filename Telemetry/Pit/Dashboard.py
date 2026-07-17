@@ -72,20 +72,20 @@ LOVOLT = "Low Cell Voltage ID"
 SUPPLY = "12v Supply"
 FIELDS = [
     [SPD, "Mph"],
-    [POV, "0.1 V"],
-    [SUM,"0.1 V"],
-    [SOC,"0.5 %"],
+    [POV, "V"],
+    [SUM,"V"],
+    [SOC,"%"],
     [ADC,"???"],
     [HITEMP,"C"],
     [LOTEMP,"C"],
     [HITHERM,"N/A"],
     [LOTHERM,"N/A"],
     [FANSPEED," 0 - 6"],
-    [HICELL,"0.0001 V"],
-    [LOCELL,"0.0001 V"],
+    [HICELL,"V"],
+    [LOCELL,"V"],
     [HIVOLT,"N/A"],
     [LOVOLT,"N/A"],
-    [SUPPLY, "0.1 V"]
+    [SUPPLY, "V"]
 ]
 """
 Format: [term, units]
