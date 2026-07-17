@@ -102,7 +102,6 @@ CURRENTSEL = "ADC Current"
 HITEMPSEL = "Highest Temperature"
 
 
-
 """
 Dashboard
 
@@ -128,8 +127,8 @@ SELECT_FAULTS = 2
 # MAP STUFF
 HALF = 0.0007945
 FULL = 0.001589
-OFFSET_LONG = (46.417919 + FULL)
-MIN_LONG = (46.40682 + FULL)
+OFFSET_LONG = (46.417919)
+MIN_LONG = (46.40682)
 
 
 GPS_SCALE = 10**6
@@ -350,7 +349,16 @@ class Dashboard:
         width_px = MAP_DIMENSIONS[0]
         height_px = MAP_DIMENSIONS[1]
 
-        x = -1 * ((long - OFFSET_LONG)*(GPS_SCALE)) // (WIDTH_LONG / width_px)
+        x1 = 357
+        x2 = 122
+        l1 = 46.413089
+        l2 = 46.416308
+
+        scale = (x2 - x1) / (l2 - l1)
+        offset = x1 - scale * l1
+        x = scale * long + offset
+
+        # x = -1 * ((long - OFFSET_LONG)*(GPS_SCALE)) // (WIDTH_LONG / width_px)
         y = -1 * ((lat - OFFSET_LAT)*(GPS_SCALE)) // (HEIGHT_LAT / height_px)
         print(f"x: {x}\ty: {y}\n")
         self.car.place(x=x,y=y,anchor=tk.CENTER)
@@ -371,8 +379,8 @@ class Dashboard:
         lat: float
         lat = random.randint(lat_min,lat_max) * (10 ** -6)
 
-        long = 46.416472#46.416308#46.413089 ##46.416308 - 0.000589#46.413089 #46.411500 #OFFSET_LONG#
-        lat = 94.272614#94.272625#94.281347 #94.272625 #MAX_LAT#
+        long = 46.41787778#46.413089 #46.416472 #46.416308#46.413089 ##46.416308 - 0.000589#46.413089 #46.411500 #OFFSET_LONG#
+        lat = 94.27161944#94.272614 #94.272614 #94.272625#94.281347 #94.272625 #MAX_LAT#
 
         print(f"LONG: {long}\tLAT: {lat}\n")
         self._placeCar(long, lat)

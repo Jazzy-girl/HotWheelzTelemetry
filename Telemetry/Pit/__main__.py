@@ -21,7 +21,7 @@ print(file=log_file, sep=",", *(ParsedPacket._fields + ("sent",))) # write all o
 gui: Dashboard = Dashboard()
 usb_filepath = "COM8"
 
-do_debug = False
+do_debug = True
 interface: serial.BackendInterface
 if not do_debug:
     interface = serial.BackendInterface(usb_filepath)
@@ -78,5 +78,6 @@ def update_data():
 # thd = threading.Thread(daemon=True, target=update_data)
 
 # thd.start()
-update_data()
+if do_debug == False:
+    update_data()
 gui.start()
