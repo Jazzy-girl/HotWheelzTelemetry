@@ -530,7 +530,9 @@ class Dashboard:
         
     
     def _updateFields(self, value, labelName):
-        self.data_to_labels[labelName].config(text=value)
+        formatted_value = "{:.2f}".format(value)
+        
+        self.data_to_labels[labelName].config(text=formatted_value)
 
     def addParsedPacket(self, packet: ParsedPacket):
         """
