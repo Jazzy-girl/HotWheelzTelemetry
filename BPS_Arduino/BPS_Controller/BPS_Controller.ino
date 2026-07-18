@@ -317,7 +317,7 @@ void updateOutputs()
   if(highTemp != PLACEHOLDER && highTemp > HITEMP_BOUND){
     fault();
   }
-  if(current < CURRENT_LOWERBOUND || current > CURRENT_UPPERBOUND && current != PLACEHOLDER){
+  if((current < CURRENT_LOWERBOUND || current > CURRENT_UPPERBOUND) && current != PLACEHOLDER){
     fault();
   }
 }

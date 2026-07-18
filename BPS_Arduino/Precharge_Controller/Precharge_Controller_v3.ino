@@ -69,7 +69,7 @@ bool dischargeFinished = false; // True if the discharge finished!
 // All measurements of time are in milliseconds!
 
 unsigned long initalizeStart = MAX_TIMER; // Start time for waiting for Discharge Enable signal from BMS
-#define initalizeTimeout 5e3              // 0.5s -- amount of time to wait for Discharge Enable to initalize before faulting
+#define initalizeTimeout 5e6              // 0.5s -- amount of time to wait for Discharge Enable to initalize before faulting
 
 unsigned long prechargeStart = MAX_TIMER;            // The time at which precharge started; in millis; MAX_TIMER acts as a 'null' here.
 const unsigned long prechargeTimeoutInterval = 10e4; // 10s ---amount of time that has to pass to mean the precharge failed; in millis
