@@ -34,7 +34,7 @@ To add:
 // 11 TAKEN
 // 12 TAKEN
 //
-// 13 
+// 13
 // 14 TAKEN
 // 15 TAKEN
 // 16 TAKEN
@@ -44,9 +44,9 @@ To add:
 //  output pins
 #define AIR_Precharge 4
 #define AIR_Main 5
-#define AIR_Discharge 14
+#define AIR_Discharge 14 // DEPRECATED ??
 #define BPS_Fault 8
-#define LED_Discharge 3
+#define LED_Discharge 3 // DEPRECATED ??
 #define LED_Fault 10
 #define NMOS_Discharge_En 17 /** Active HIGH */
 #define NMOS_Charge_En 18    /** Active HIGH */
@@ -119,10 +119,14 @@ void setup()
   if (digitalRead(BMS_DischargeEn))
   {
     initalizeStart = millis();
-    while (millis() - initalizeStart < initalizeTimeout)
+    while ((millis() - initalizeStart < initalizeTimeout) && digitalRead(BMS_DischargeEn))
     {
-      Serial.println("Waiting for BMS Discharge Enable");
+      Serial.print("Waiting for BMS Discharge Enable, which is: ");
+      Serial.println(digitalRead(BMS_DischargeEn));
       delay(100); // added
+      // if(digitalRead(BMS_DischargeEn) == LOW){
+      //   break;
+      // }
     }
   }
   if (digitalRead(BMS_DischargeEn))
@@ -143,12 +147,15 @@ void precharge()
   if Optocoupler sends signal -> if has been precharging for enough time -> start car; deactivate AIR Precharge.
   */
 
-  Serial.print("Optocoupler: ");
-  Serial.println(digitalRead(Optocoupler));
+  // Serial.print("Optocoupler: ");
+  // Serial.println(digitalRead(Optocoupler));
 
   unsigned long now = millis();
   if (digitalRead(Optocoupler) == LOW)
   { // if Optocoupler is active
+
+    Serial.print("Optocoupler: ");
+    Serial.println(digitalRead(Optocoupler));
 
     // This part waits for a steady signal from the optocoupler,
     // current duration .5s but that's just a guess.
@@ -248,14 +255,14 @@ void loop()
     precharge_fault();
   }
 
-  if (digitalRead(BMS_MPO) == HIGH || digitalRead(Feather_BPS_Fault) == HIGH)
-  {
-    bps_fault();
-  }
-  else
-  {
-    digitalWrite(BPS_Fault, LOW);
-  }
+  // if (digitalRead(BMS_MPO) == HIGH || digitalRead(Feather_BPS_Fault) == HIGH)
+  // {
+  //   bps_fault();
+  // }
+  // else
+  // {
+  //   digitalWrite(BPS_Fault, LOW);
+  // }
 
   if (carRunning == false)
   {
@@ -265,10 +272,11 @@ void loop()
       {                                    // if the prechargeStart hasn't yet been assigned
         digitalWrite(AIR_Precharge, HIGH); // Closes AIR precharge
         prechargeStart = millis();
+        Serial.println("Pre-Charging Start!");
       }
-      Serial.println("Pre-Charging");
+      // Serial.println("Pre-Charging");
       precharge();
-      Serial.println("Pre-Charging");
+      // Serial.println("Pre-Charging");
     }
   }
 }
