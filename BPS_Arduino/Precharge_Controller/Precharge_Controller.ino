@@ -121,8 +121,6 @@ void setup()
     initalizeStart = millis();
     while ((millis() - initalizeStart < initalizeTimeout) && digitalRead(BMS_DischargeEn))
     {
-      Serial.print("Waiting for BMS Discharge Enable, which is: ");
-      Serial.println(digitalRead(BMS_DischargeEn));
       delay(100); // added
       // if(digitalRead(BMS_DischargeEn) == LOW){
       //   break;
@@ -159,8 +157,12 @@ void precharge()
 
     // This part waits for a steady signal from the optocoupler,
     // current duration .5s but that's just a guess.
-    if (optocouplerActivatedStart == MAX_TIMER)
+    if (optocouplerActivatedStart == MAX_TIMER) {
       optocouplerActivatedStart = now;
+      Serial.println("First optocoupler loop");
+      return;
+    }
+
 
     unsigned long chargingInterval = now - optocouplerActivatedStart;
     Serial.println("Optocoupler Waiting");
@@ -175,6 +177,9 @@ void precharge()
       delay(500);
       digitalWrite(AIR_Precharge, LOW);
     }
+  } else {
+    // reset the timer if it bounces
+    optocouplerActivatedStart = MAX_TIMER;
   }
 
   // timeout check
@@ -266,7 +271,7 @@ void loop()
 
   if (carRunning == false)
   {
-    if (digitalRead(BMS_DischargeEn) == LOW)
+    // if (digitalRead(BMS_DischargeEn) == LOW)
     { //&& digitalRead(BMS) == HIGH
       if (prechargeStart == MAX_TIMER)
       {                                    // if the prechargeStart hasn't yet been assigned
