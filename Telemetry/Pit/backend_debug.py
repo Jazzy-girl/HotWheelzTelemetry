@@ -1,5 +1,7 @@
 import sys
-from Telemetry.Pit.serial_recv import *
+import os
+import Telemetry.packet as packet
+from Telemetry.serial_recv import *
 
 if len(sys.argv) < 2 or len(sys.argv) > 3:
     print(f"Usage: {sys.argv[0]} <PORT | FILE> [baudrate]")

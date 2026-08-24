@@ -1,0 +1,77 @@
+// #define NMEA_FLOAT_T double
+#include <Adafruit_GPS.h>
+#define GPSSerial Serial1
+
+#define TX 0
+#define RX 1
+
+float gps_longitude;
+float gps_latitude;
+float gps_speed;
+
+Adafruit_GPS GPS(&GPSSerial);
+
+#define INIT_COMMAND_1 "$PMTK314,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0*28"
+#define INIT_COMMAND_2 "$PMTK220,500*2B"
+
+bool gps_check_connection(unsigned long timeout_ms = 3000) {
+    unsigned long start = millis();
+    while (millis() - start < timeout_ms) {
+        while (GPSSerial.available()) { // Are there any bytes already waiting in the buffer?
+            char c = GPS.read();
+            // if (c) Serial.print(c); // Print raw NMEA data for debugging
+            // If nothing prints, the GPS isn’t talking.
+        }
+
+        if (GPS.newNMEAreceived()) {    // Check if we received a new NMEA sentence
+            if (GPS.parse(GPS.lastNMEA())) {    // Try to parse it, if it’s valid, we have a connection
+                Serial.println("GPS connection OK");
+                return true;
+            }
+        }
+    }
+    Serial.println("GPS connection check failed: no valid NMEA data received");
+    return false;
+}
+
+/// Initialize the GPS
+void gps_init() {
+    // probably don't need to config pins!
+    GPSSerial.begin(9600);
+
+    // GPS.sendCommand(PMTK_SET_NMEA_OUTPUT_RMCGGA);
+    GPS.sendCommand(INIT_COMMAND_1);
+    GPS.sendCommand(INIT_COMMAND_2);
+    // Set the update rate
+    // GPS.sendCommand(PMTK_SET_NMEA_UPDATE_1HZ); // 1 Hz update rate
+
+    // // Request updates on antenna status, comment out to keep quiet
+    // GPS.sendCommand(PGCMD_ANTENNA);
+
+    // Ask for firmware version
+    GPSSerial.println(PMTK_Q_RELEASE);
+    gps_check_connection();
+}
+/// Update the GPS to get new data
+void gps_poll() {
+    while (GPSSerial.available()) {
+        char c = GPS.read();
+        // if (c) Serial.print(c);
+    }
+    if (GPS.newNMEAreceived()) {
+        if (!GPS.parse(GPS.lastNMEA()))
+            return;
+    }
+    if (GPS.fix) {
+        gps_latitude = GPS.latitudeDegrees;
+        gps_longitude = GPS.longitudeDegrees;
+        gps_speed = GPS.speed * 1.852f; // Convert from knots to km/h
+
+        // Serial.print("Lat: "); Serial.println(gps_latitude, 6);
+        // Serial.print("Lon: "); Serial.println(gps_longitude, 6);
+        // Serial.print("Speed: "); Serial.println(gps_speed);
+
+    }  else{
+        Serial.println("No GPS fix");
+    }
+}

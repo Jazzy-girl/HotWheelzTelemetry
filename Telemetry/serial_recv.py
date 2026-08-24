@@ -4,7 +4,7 @@ import io
 import base64
 from dataclasses import dataclass
 from typing import Iterator
-import Telemetry.packet as packet
+from Telemetry.packet import RawPacket, PACKET_LEN
 
 class BackendInterface:
     def __init__(self, interface: io.TextIOWrapper | str, baudrate: int = 9600):
@@ -13,7 +13,7 @@ class BackendInterface:
                 self.interface = open(interface)
             else:
                 ser = serial.Serial(interface, baudrate)
-                ser.open()
+                # ser.open()
                 self.interface = io.TextIOWrapper(io.BufferedReader(ser), newline='\n')
         else:
             self.interface = interface
@@ -29,6 +29,8 @@ class BackendMessage:
         return len(self.raw)
     @staticmethod
     def parse(raw: str) -> 'BackendMessage':
+        if raw[-1] == '\n':
+            raw = raw[:-1]
         if raw[0] == '!':
             return PrettyBackendMessage(raw, raw[1:])
         else:
@@ -37,13 +39,12 @@ class BackendMessage:
                 binary = base64.b64decode(raw, validate=True)
             except Exception:
                 return BackendMessage(raw)
-            if len(binary) == packet.PACKET_LEN and binary[:2] == b"HW":
+            if len(binary) == PACKET_LEN and binary[:2] == b"HW":
                 try:
-                    return PacketBackendMessage(raw, binary, packet.RawPacket.unpack_bytes(binary))
+                    return PacketBackendMessage(raw, binary, RawPacket.unpack_bytes(binary))
                 except Exception:
                     pass
             return BinaryBackendMessage(raw, binary)
-            
 
 @dataclass(frozen=True)
 class PrettyBackendMessage(BackendMessage):
@@ -55,4 +56,11 @@ class BinaryBackendMessage(BackendMessage):
 
 @dataclass(frozen=True)
 class PacketBackendMessage(BinaryBackendMessage):
-    packet: packet.RawPacket
+    packet: RawPacket
+    @staticmethod
+    def from_packet(packet: RawPacket) -> 'PacketBackendMessage':
+        binary = packet.pack_bytes()
+        raw = base64.b64encode(binary)
+        return PacketBackendMessage(raw.decode(), bytes(binary), packet)
+
+

@@ -4,10 +4,7 @@ import math
 import time
 from typing import NamedTuple, Generator
 
-PACKET_ORDER = "little" # little | big
-PACKET_ORDER_STRUCT = '<' if PACKET_ORDER == "little" else '>' if PACKET_ORDER == "big" else ''
-
-PACKET_FORMAT = PACKET_ORDER_STRUCT + "xxHI dd H Hf Ih5H8B"
+PACKET_FORMAT = "<xxHI ff H Hf Ih5H8B"
 
 PULSES_PER_ROTATION = 48
 
@@ -20,7 +17,7 @@ S_TO_HR = 3600
 
 PULSE_SPEED_MUL = WHEEL_CIRCUMFERENCE_FT / PULSES_PER_ROTATION * FT_TO_MI * S_TO_HR
 
-PACKET_LEN = 56
+PACKET_LEN = 48
 
 def thermistor_temp(reading: int) -> tuple[float, float, float]:
     LOW_SIDE_RESISTOR = 10000
@@ -34,7 +31,7 @@ def thermistor_temp(reading: int) -> tuple[float, float, float]:
     return voltage * 3.3, resistance, (1.0 / steinhart) - 273.15
 
 def checksum_of_data(data: bytes | bytearray) -> int:
-    return functools.reduce(int.__xor__, struct.unpack(PACKET_ORDER_STRUCT + "4x26H", data))
+    return functools.reduce(int.__xor__, struct.unpack("<4x22H", data))
 
 def write_checksum(data: bytearray):
     cs = checksum_of_data(data)
@@ -149,7 +146,7 @@ class RawPacket(NamedTuple):
         """
         Update the packet with BMS data
         """
-        faults, curr, open_volt, summed_volt, supply_12v, high_cell_volt, low_cell_volt, high_cell_id, low_cell_id, high_temp, low_temp, high_therm_id, low_therm_id, soc, fan_speed = struct.unpack(PACKET_ORDER_STRUCT + "Ih5H8B", data)
+        faults, curr, open_volt, summed_volt, supply_12v, high_cell_volt, low_cell_volt, high_cell_id, low_cell_id, high_temp, low_temp, high_therm_id, low_therm_id, soc, fan_speed = struct.unpack("<Ih5H8B", data)
         return self._replace(
             faults=faults,
             curr=curr,
@@ -212,14 +209,14 @@ class RawPacket(NamedTuple):
             bms_faults=FaultSet(self.faults),
             bms_current=self.curr * 0.1,
             bms_open_voltage=self.open_volt * 0.1,
-            bms_summed_voltage=self.open_volt * 0.1,
+            bms_summed_voltage=self.summed_volt * 0.01,
             bms_supply_12v=self.supply_12v * 0.1,
             bms_high_cell_volt=self.high_cell_volt * 0.0001,
             bms_low_cell_volt=self.high_cell_volt * 0.0001,
             bms_high_cell_id=self.high_cell_id,
             bms_low_cell_id=self.low_cell_id,
-            bms_high_temp=self.high_temp - 40,
-            bms_low_temp=self.low_temp - 40,
+            bms_high_temp=self.high_temp,
+            bms_low_temp=self.low_temp,
             bms_high_therm_id=self.high_therm_id,
             bms_low_therm_id=self.low_therm_id,
             bms_soc=self.soc * 0.5,
@@ -269,19 +266,19 @@ class ParsedPacket(NamedTuple):
             gps_lon=self.gps_lon,
             gps_lat=self.gps_lat,
             temp=self.therm_reading,
-            motor_speed=self.motor_speed / PULSE_SPEED_MUL,
+            motor_speed=int(self.motor_speed / PULSE_SPEED_MUL),
             gps_speed=self.gps_speed / KM_TO_MI,
             faults=int(self.bms_faults),
-            curr=int(self.bms_curr * 10),
-            open_volt=int(self.bms_open_volt * 10),
-            summed_volt=int(self.bms_open_volt * 10),
+            curr=int(self.bms_current * 10),
+            open_volt=int(self.bms_open_voltage * 10),
+            summed_volt=int(self.bms_summed_voltage * 100),
             supply_12v=int(self.bms_supply_12v * 10),
             high_cell_volt=int(self.bms_high_cell_volt * 10000),
             low_cell_volt=int(self.bms_high_cell_volt * 10000),
             high_cell_id=self.bms_high_cell_id,
             low_cell_id=self.bms_low_cell_id,
-            high_temp=self.bms_high_temp + 40,
-            low_temp=self.bms_low_temp + 40,
+            high_temp=self.bms_high_temp,
+            low_temp=self.bms_low_temp,
             high_therm_id=self.bms_high_therm_id,
             low_therm_id=self.bms_low_therm_id,
             soc=int(self.bms_soc * 2),
