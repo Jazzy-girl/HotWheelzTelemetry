@@ -13,7 +13,18 @@ from random import randint
 from PIL import Image, ImageTk
 
 """
-Dashboard
+Pit side Dashboard app.
+
+Current features:
+    - All packet fields
+    - Current faults
+    - Map of Minnesota track that can track vehicle location
+    - Graphs
+        Cockpit temp / time
+        Pack Open Voltage / time
+        Current / time
+        Highest temp / time
+
 Authors:
 Ryanne Wilson
 Gem Martinage
@@ -102,19 +113,7 @@ CURRENTSEL = "ADC Current"
 HITEMPSEL = "Highest Temperature"
 
 
-"""
-Dashboard
 
-Graphs...
-    Speed over time- select area of track
-    Cockpit temp / time
-    Pack Open Voltage / time
-    Current / time
-    Highest temp / time
-
-For the non-speed over time graphs:
-    store the last # entries. Use a ring buffer (?) or a deque
-"""
 MAP_DIMENSIONS = (618,773)#(444,624)#(500,500)
 CAR_DIMENSIONS = (10,10)
 
@@ -124,8 +123,21 @@ SELECT_FIELDS = 0
 SELECT_MAP = 1
 SELECT_FAULTS = 2
 
-# MAP STUFF
+# MAP FIELDS
+"""
+Notes on the map fields:
+    The map image currently used is taken from Google maps and suffers from the issues that
+    all 2D images of the globe do-- warping, stretching, imperfect projection of 3D object.
 
+    The constants below, labeled OFFSET_, _SCALEm etc, are the result of various tests I (Ryanne)
+    performed to determine which numbers would result in the most accurate tracking of the vehicle.
+
+    A VERY IMPORTANT THING TO NOTE:
+        The map is rotated 90 degrees, such that latitude and longitude on the map are swapped
+        from the real latitude and longitude on the globe.
+        (so on the map, x = lat, y = long)
+
+"""
 OFFSET_ACTUAL_LAT = (46.417919)
 MIN_ACTUAL_LAT = (46.40682)
 
@@ -156,18 +168,24 @@ class Dashboard:
     LARGE_FONT = font.Font(family='Georgia',size=24,weight='bold')
     SMALL_FONT = font.Font(family='Georgia',size=12)
 
+    # dict for associating buttons with data frames so the screen updates when buttons are selected
     buttons_to_data_frames : dict[tk.Button, tk.Frame]
 
     buttons_to_data_frames = dict()
 
+    # dict for associating data with labels so labels can update their data text
     data_to_labels : dict[str, tk.Label]
     data_to_labels = dict()
 
+    # dict of all graph buttons, used for highlighting / greying out buttons when selected / unselected
     graph_buttons : list[tk.Button]
     graph_buttons = list()
 
+    # DEBUG FIELD:
+    # used as a 'time' representation, updated whenever a new packet is randomly generated
     timeForRandGen = 0
 
+    # set of all active faults, used for display and tracking
     activeFaults: set[str]
     activeFaults = set()
 
@@ -346,7 +364,11 @@ class Dashboard:
 
             self.data_to_labels[name] = val_field
 
+
     def _placeCar(self, actual_lat: float, actual_long: float):
+        """
+        Takes in latitude and longitude coords and projects the vehicle onto that location on the map.
+        """
         height_px = MAP_DIMENSIONS[1]
 
         x = LAT_SCALE * actual_lat + LAT_OFFSET
@@ -354,24 +376,15 @@ class Dashboard:
         print(f"x: {x}\ty: {y}\n")
         self.car.place(x=x,y=y,anchor=tk.CENTER)
 
-
-
     def _move(self, event):
         """
+        DEBUG FUNCTION:
+        Click and the car is moved to actual_lat and actual_long coords.
         """
-        
-        actual_lat_min = int(MIN_ACTUAL_LAT*GPS_SCALE)
-        actual_lat_max = int(OFFSET_ACTUAL_LAT*GPS_SCALE)
-        actual_long_min = int(OFFSET_ACTUAL_LONG*GPS_SCALE)
-        actual_long_max = int(MAX_ACTUAL_LONG*GPS_SCALE)
 
-        actual_lat: float
-        actual_lat = random.randint(actual_lat_min,actual_lat_max) * (10 ** -6)
-        actual_long: float
-        actual_long = random.randint(actual_long_min,actual_long_max) * (10 ** -6)
-
-        actual_lat = 46.41787778#46.413089 #46.416472 #46.416308#46.413089 ##46.416308 - 0.000589#46.413089 #46.411500 #OFFSET_LONG#
-        actual_long = 94.27161944#94.272614 #94.272614 #94.272625#94.281347 #94.272625 #MAX_LAT#
+        # should be in upper left corner on the bend.
+        actual_lat = 46.41787778
+        actual_long = 94.27161944
 
         print(f"LONG: {actual_lat}\tLAT: {actual_long}\n")
         self._placeCar(actual_lat, actual_long)
@@ -385,27 +398,22 @@ class Dashboard:
         self.map_img = ImageTk.PhotoImage(img_data)
 
         self.map_label = tk.Label(self.map_frame, image=self.map_img,padx=0,pady=0)
-        self.map_label.bind("<Button-1>", self._move) # type: ignore
+        # DEBUG FUNCTION:
+        # used to test if lat and long projctions are accurate.
+        # self.map_label.bind("<Button-1>", self._move) # type: ignore
         width = MAP_DIMENSIONS[0]
         height = MAP_DIMENSIONS[1]
-        # self.mapCanvas = tk.Canvas(self.map_frame,width=width, height=height)
         
-    
         image = Image.open(self.CAR_FILE)
         image_data = image.resize(CAR_DIMENSIONS)
         self.car_img = ImageTk.PhotoImage(image_data)
 
         self.car = tk.Label(self.map_frame, image=self.car_img)
-        
+
+        # place the car onto the map.
         x = width/2.0
         y = height/2.0
         self.car.place(x=0,y=0,anchor=tk.CENTER)
-        # self.item = self.mapCanvas.create_image(x,y,image=image)
-        # self.mapCanvas.pack(expand=1,fill="both")
-        
-        
-        # self.mapCanvas.bind('<Button-1>', self._next_image)
-
 
         self.map_label.place(x=0,y=0)
     
@@ -429,8 +437,6 @@ class Dashboard:
 
         # holds all the data options: Fields, Map, Faults
         self.data_frame = self._makeFrame(self.left_frame, tk.BOTTOM)
-        # self.data_frame.config(width=200)
-        # self.data_frame.configure(min)
         self.data_frame.pack_propagate(False)
 
         self._initFieldsFrame()
@@ -511,7 +517,7 @@ class Dashboard:
         
     
     def start(self):
-        # self.root.after(100, self._randGenParsed)
+        # DEBUG: self.root.after(100, self._randGenParsed)
         self.root.after(1000, self.graph.start)
         
         self.root.mainloop()
@@ -524,9 +530,8 @@ class Dashboard:
                               faults,randint(0,100),randint(0,100),randint(0,100),randint(0,100),randint(0,100),
                               randint(0,100),randint(0,100),randint(0,100),randint(0,100),randint(0,100),randint(0,100),
                               randint(0,100),randint(0,100),randint(0,100))
-        # print("rand gen parsed!")
         self.addParsedPacket(packet=packet)
-        # self.root.after(500, self._randGenParsed)
+        # DEBUG: self.root.after(500, self._randGenParsed)
         
     
     def _updateFields(self, value, labelName):
@@ -566,10 +571,6 @@ class Dashboard:
         # GPS UPDATE!
         self._placeCar(packet.gps_lat, packet.gps_lon)
 
-    
-    # def _makeLabel(self, parent, text):
-    #     label = tk.Label(parent, text=text, bg="white", font=("Comic Sans MS", 16))
-    #     return label
 
     def _box(self, parent, title_text, width=150, height = 120):
         """
@@ -580,57 +581,3 @@ class Dashboard:
         label = tk.Label(frame, text=title_text, bg="white", font=("Comic Sans MS", 16))
         label.pack(pady=5)
         return frame, label
-
-# dashboard = Dashboard()
-# dashboard.start()
-
-# def box(parent, title_text, width=150, height = 120):
-#     frame = tk.Frame(parent, bg="white", relief=tk.RIDGE, width=width, height=height, borderwidth=5)
-#     frame.grid_propagate(False)
-#     label = tk.Label(frame, text=title_text, bg="white", font=("Comic Sans MS", 16))
-#     label.pack(pady=5)
-#     return frame, label
-
-# def create_plot(parent, title):
-#     fig, ax = plt.subplots(figsize=(5, 4), dpi=100)
-#     ax.plot([0, 1, 2, 3], [random.randint(0, 10) for _ in range(4)])
-#     ax.set_title(title)
-
-#     canvas = FigureCanvasTkAgg(fig, master=parent)
-#     canvas.draw()
-#     canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
-#     return canvas
-
-# #left
-# left_frame = tk.Frame(root, bg=background, width = 300)
-# left_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
-# left_frame.pack_propagate(False)
-# #use matplotlib to create graph corresponding to each box on the left side
-# #6 by 2 grid of boxes on the left side
-# boxes = []
-# for i in range(6):
-#     for j in range(2):
-#         box_frame, box_label = box(left_frame, f"Box {i*2 + j + 1}")
-#         box_frame.grid(row=i, column=j, padx=3, pady=3)
-#         left_frame.grid_rowconfigure(i, weight=1)
-#         left_frame.grid_columnconfigure(j, weight=1)
-#         boxes.append((box_frame, box_label))
-
-# #right
-# main_panel = tk.Frame(root, bg=background)
-# main_panel.pack(side=tk.RIGHT, expand=True, fill=tk.BOTH)
-# graph_frame = tk.Frame(main_panel, bg="white", borderwidth=7, relief=tk.SUNKEN)
-# gps_frame = tk.Frame(main_panel, bg="lightgrey", borderwidth=7, relief=tk.SUNKEN)
-# graph_frame.pack(side=tk.TOP, expand=True, fill=tk.BOTH)
-# gps_frame.pack(side=tk.BOTTOM, expand=True, fill=tk.BOTH)
-
-# graph_frame, graph_label = box(graph_frame, "Graph Area", width = 1000, height = 600)
-# gps_frame, gps_label = box(gps_frame, "GPS Data Area", width = 1000, height = 600)
-
-
-
-# root.mainloop()
-   
-
-
-
